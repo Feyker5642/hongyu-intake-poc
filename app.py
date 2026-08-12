@@ -2,6 +2,8 @@
 
 三區：原始需求 → AI 結構化結果（可編輯）→ 檢查與下一步。
 沒有金鑰也能完整展示：解析自動落回離線規則引擎。
+
+狀態規則：任何影響匯出內容的修改都會撤銷人工確認；改動原文還會作廢舊解析。
 """
 from __future__ import annotations
 
@@ -17,9 +19,9 @@ from services.llm_parser import parse_request
 ROOT = pathlib.Path(__file__).parent
 DEMO = json.loads((ROOT / "data" / "demo_cases.json").read_text(encoding="utf-8"))
 TAXONOMY = json.loads((ROOT / "data" / "public_taxonomy.json").read_text(encoding="utf-8"))
+NONE = "（未提供）"
 
 st.set_page_config(page_title="宏宇工藝 AI 詢價轉單助手", layout="wide")
-
 st.title("宏宇工藝 AI 詢價轉單助手")
 st.warning(
     "**Concept Demo · 全部使用合成資料 · 非正式報價系統**　"
@@ -28,39 +30,47 @@ st.warning(
     icon="⚠️",
 )
 
-for key, default in [("result", None), ("confirmed", False), ("text", "")]:
+for key, default in [("result", None), ("confirmed", False),
+                     ("text", ""), ("edited", set())]:
     st.session_state.setdefault(key, default)
 
 
-def reset_result():
+def on_text_change():
+    """改原文 → 舊解析立即作廢，不可能用新原文配舊結果匯出。"""
     st.session_state.result = None
     st.session_state.confirmed = False
+    st.session_state.edited = set()
+
+
+def on_field_change(field: str):
+    """改任何欄位 → 撤銷確認，該欄標為已確認並清掉它的舊矛盾與依據。"""
+    st.session_state.confirmed = False
+    st.session_state.edited = set(st.session_state.edited) | {field}
+
+
+def load_case(text: str):
+    st.session_state.text = text
+    on_text_change()
 
 
 # ── 第一區：原始需求 ────────────────────────────────────────────────
 st.header("1. 客戶原始需求")
-
 cols = st.columns(len(DEMO["cases"]))
 for col, case in zip(cols, DEMO["cases"]):
-    if col.button(case["title"], use_container_width=True):
-        st.session_state.text = case["text"]
-        reset_result()
+    col.button(case["title"], use_container_width=True,
+               on_click=load_case, args=(case["text"],), key=f"case_{case['id']}")
 
-text = st.text_area(
-    "貼上 Email、LINE 或電話紀錄（合成資料）",
-    value=st.session_state.text,
-    height=140,
-    key="input_area",
-)
+st.text_area("貼上 Email、LINE 或電話紀錄（合成資料）", height=140,
+             key="text", on_change=on_text_change)
 
 left, right = st.columns([1, 3])
 if left.button("解析需求", type="primary", use_container_width=True):
-    if not text.strip():
+    if not st.session_state.text.strip():
         st.error("請先貼上或載入一段需求文字。")
     else:
-        st.session_state.text = text
-        st.session_state.result = parse_request(text)
+        st.session_state.result = parse_request(st.session_state.text)
         st.session_state.confirmed = False
+        st.session_state.edited = set()
 
 result: ParseResult | None = st.session_state.result
 if result is None:
@@ -70,117 +80,127 @@ if result is None:
 if result.parser_mode != "openai":
     right.info(f"已切換離線 Demo 模式：{result.parser_note or '離線規則解析'}", icon="🔌")
 else:
-    right.success("解析模式：OpenAI Structured Outputs（缺漏與矛盾仍由規則層複核）")
+    right.success("解析模式：OpenAI Structured Outputs（數字、尺寸、日期仍以規則層為準）")
 
 # ── 第二區：AI 結構化結果 ──────────────────────────────────────────
 st.header("2. AI 結構化結果（可修改）")
 req, sysf = result.request, result.system
+BADGE = {"已確認": "✅ 已確認", "AI抽取": "🤖 AI 抽取",
+         "不確定": "⚠️ 不確定", "未提供": "➖ 未提供"}
 
 
-def status_badge(field: str) -> str:
-    return {"已確認": "✅ 已確認", "AI抽取": "🤖 AI 抽取",
-            "不確定": "⚠️ 不確定", "未提供": "➖ 未提供"}.get(
-        sysf.status_by_field.get(field, "未提供"), "➖ 未提供")
-
-
-def dims_text(d: Dimensions | None) -> str:
-    if not d:
-        return ""
-    parts = [str(v) for v in (d.length_mm, d.width_mm, d.height_mm) if v is not None]
-    return " × ".join(parts) + " mm" if parts else ""
-
-
-def field_row(label: str, field: str, widget):
-    a, b = st.columns([3, 1])
-    with a:
-        value = widget()
-    b.caption(f"{status_badge(field)}")
+def meta(col, field: str):
+    col.caption(BADGE.get(sysf.status_by_field.get(field, "未提供"), "➖ 未提供"))
     ev = sysf.evidence_by_field.get(field)
     if ev:
-        b.caption(f"原文：「{ev}」")
-    return value
+        col.caption(f"原文：「{ev}」")
+
+
+def select_field(label, field, options, current):
+    a, b = st.columns([3, 1])
+    idx = options.index(current) + 1 if current in options else 0
+    with a:
+        picked = st.selectbox(label, [NONE] + options, index=idx,
+                              key=f"w_{field}", on_change=on_field_change, args=(field,))
+    meta(b, field)
+    return None if picked == NONE else picked
+
+
+def text_field(label, field, current, **kw):
+    a, b = st.columns([3, 1])
+    with a:
+        v = st.text_input(label, value=current or "", key=f"w_{field}",
+                          on_change=on_field_change, args=(field,), **kw)
+    meta(b, field)
+    return v or None
+
+
+def dims_editor(label, field, dims: Dimensions | None) -> Dimensions | None:
+    st.markdown(f"**{label}**　{BADGE.get(sysf.status_by_field.get(field, '未提供'), '')}")
+    c = st.columns(3)
+    vals = []
+    for i, (name, attr) in enumerate([("長", "length_mm"), ("寬", "width_mm"), ("高", "height_mm")]):
+        cur = getattr(dims, attr, None) if dims else None
+        vals.append(c[i].number_input(f"{name} (mm)", min_value=0.0, step=1.0,
+                                      value=float(cur) if cur is not None else 0.0,
+                                      key=f"w_{field}_{attr}",
+                                      on_change=on_field_change, args=(field,)))
+    if dims and dims.original_text:
+        st.caption(f"原文（唯讀）：「{dims.original_text}」")
+    if not any(vals):
+        return None
+    return Dimensions(length_mm=vals[0] or None, width_mm=vals[1] or None,
+                      height_mm=vals[2] or None,
+                      original_text=dims.original_text if dims else None)
 
 
 c1, c2 = st.columns(2)
 with c1:
     st.subheader("產品與情境")
     cats = TAXONOMY["product_categories_supported"] + TAXONOMY["product_categories_future"]
-    req.product_category = field_row("產品類別", "product_category", lambda: st.selectbox(
-        "產品類別", ["（未提供）"] + cats,
-        index=(cats.index(req.product_category) + 1) if req.product_category in cats else 0))
-    if req.product_category == "（未提供）":
-        req.product_category = None
-    req.contents = field_row("內容物", "contents", lambda: st.text_input(
-        "內容物", value=req.contents or "")) or None
-    req.quantity = field_row("數量", "quantity", lambda: st.number_input(
-        "數量", min_value=0, value=req.quantity or 0, step=100)) or None
-    st.text_input("內容物尺寸", value=dims_text(req.product_dimensions),
-                  disabled=True, help="唯讀：尺寸由解析層負責，避免手改造成單位不一致")
-    st.text_input("包裝成品尺寸", value=dims_text(req.package_dimensions), disabled=True)
+    req.product_category = select_field("產品類別", "product_category", cats, req.product_category)
+    req.contents = text_field("內容物", "contents", req.contents)
+    a, b = st.columns([3, 1])
+    with a:
+        q = st.number_input("數量", min_value=0, step=100, value=req.quantity or 0,
+                            key="w_quantity", on_change=on_field_change, args=("quantity",))
+    meta(b, "quantity")
+    req.quantity = q or None
+    req.product_dimensions = dims_editor("內容物尺寸", "product_dimensions", req.product_dimensions)
+    req.package_dimensions = dims_editor("包裝成品尺寸", "package_dimensions", req.package_dimensions)
     if req.dimensions_unclassified:
-        st.text_input("尺寸（歸屬不明）", value=dims_text(req.dimensions_unclassified),
-                      disabled=True, help="前後文未指明是內容物還是包裝尺寸")
+        st.caption(f"⚠️ 尺寸歸屬不明，未填入任何尺寸欄："
+                   f"「{req.dimensions_unclassified.original_text}」")
 
 with c2:
     st.subheader("規格與交付")
-    boxes = TAXONOMY["box_types"]
-    req.box_type = field_row("盒型", "box_type", lambda: st.selectbox(
-        "盒型", ["（未提供）"] + boxes,
-        index=(boxes.index(req.box_type) + 1) if req.box_type in boxes else 0))
-    if req.box_type == "（未提供）":
-        req.box_type = None
-    req.material_direction = field_row("紙材", "material_direction", lambda: st.text_input(
-        "紙材", value=req.material_direction or "")) or None
-    req.finishes = field_row("表面加工", "finishes", lambda: st.multiselect(
-        "表面加工", TAXONOMY["finishes"], default=req.finishes))
-    arts = TAXONOMY["artwork_status"]
-    req.artwork_status = field_row("設計稿", "artwork_status", lambda: st.selectbox(
-        "設計稿狀態", ["（未提供）"] + arts,
-        index=(arts.index(req.artwork_status) + 1) if req.artwork_status in arts else 0))
-    if req.artwork_status == "（未提供）":
-        req.artwork_status = None
-    req.requested_delivery_date = field_row("交期", "requested_delivery_date",
-        lambda: st.text_input("交期（ISO；不完整日期留空）",
-                              value=req.requested_delivery_date or "")) or None
+    req.box_type = select_field("盒型", "box_type", TAXONOMY["box_types"], req.box_type)
+    req.material_direction = text_field("紙材", "material_direction", req.material_direction)
+    a, b = st.columns([3, 1])
+    with a:
+        req.finishes = st.multiselect("表面加工", TAXONOMY["finishes"], default=req.finishes,
+                                      key="w_finishes", on_change=on_field_change,
+                                      args=("finishes",))
+    meta(b, "finishes")
+    req.artwork_status = select_field("設計稿狀態", "artwork_status",
+                                      TAXONOMY["artwork_status"], req.artwork_status)
+    req.requested_delivery_date = text_field(
+        "交期（ISO 例 2026-09-30；不完整請留空）", "requested_delivery_date",
+        req.requested_delivery_date)
     if req.delivery_date_original:
         st.caption(f"交期原文保留：「{req.delivery_date_original}」")
-    req.delivery_location = st.text_input("交貨地點", value=req.delivery_location or "") or None
+    req.delivery_location = text_field("交貨地點", "delivery_location", req.delivery_location)
 
 if req.preferences:
     st.info("**客戶偏好（不轉成材料或預算）**：" + "、".join(req.preferences))
 
-st.session_state.result = validate(result)  # 改動後即時重算完整度與狀態
+st.session_state.result = validate(result, confirmed_fields=set(st.session_state.edited))
 
 # ── 第三區：檢查與下一步 ───────────────────────────────────────────
 st.header("3. 檢查與下一步")
 sysf = st.session_state.result.system
-
 m1, m2, m3 = st.columns(3)
 m1.metric("資料完整度", sysf.data_completeness)
 m2.metric("待補欄位", len(sysf.missing_fields))
 m3.metric("矛盾", len(sysf.conflicts))
 
-if sysf.conflicts:
-    for c in sysf.conflicts:
-        st.error(f"**矛盾｜{c.field}**：出現 {' 與 '.join(c.values)}，"
-                 f"系統不代為選擇。原文：「{c.evidence}」", icon="🚨")
-if sysf.ambiguous_fields:
-    for a in sysf.ambiguous_fields:
-        st.warning(f"**不確定｜{a.field}**：{a.reason}（原文：「{a.evidence}」）", icon="❓")
-if sysf.risk_notes:
-    for n in sysf.risk_notes:
-        st.warning(f"**風險**：{n}", icon="⚠️")
+for c in sysf.conflicts:
+    st.error(f"**矛盾｜{c.field}**：出現 {' 與 '.join(c.values)}，系統不代為選擇。"
+             f"原文：「{c.evidence}」", icon="🚨")
+for a_ in sysf.ambiguous_fields:
+    st.warning(f"**不確定｜{a_.field}**：{a_.reason}（原文：「{a_.evidence}」）", icon="❓")
+for n in sysf.risk_notes:
+    st.warning(f"**風險**：{n}", icon="⚠️")
 if sysf.missing_fields:
     st.markdown("**待補資料**：" + "、".join(sysf.missing_fields))
 
 st.divider()
 b1, b2, b3 = st.columns(3)
-
 if b1.button("產生客戶追問訊息", use_container_width=True):
-    st.text_area("可直接複製給客戶", build_followup_message(st.session_state.result), height=110)
-
-if b2.button("人工確認", type="primary", use_container_width=True):
-    st.session_state.confirmed = True
+    st.text_area("可直接複製給客戶",
+                 build_followup_message(st.session_state.result), height=110)
+b2.button("人工確認", type="primary", use_container_width=True,
+          on_click=lambda: st.session_state.update(confirmed=True))
 
 if st.session_state.confirmed:
     st.success("已人工確認。ERP 草稿資料已準備（Demo 不連線 ERP）。", icon="✅")
@@ -193,4 +213,4 @@ if st.session_state.confirmed:
 else:
     b3.button("匯出 JSON", disabled=True, use_container_width=True,
               help="必須先人工確認才能匯出")
-    st.caption("未經人工確認不得匯出——AI 整理完成不等於業務確認完成。")
+    st.caption("未經人工確認不得匯出；任何修改都會撤銷確認，需要重新確認。")

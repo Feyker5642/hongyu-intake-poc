@@ -6,11 +6,12 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from rules.validator import rules_parse, validate
+from rules.validator import RULE_AUTHORITATIVE, rules_parse, validate
 from schemas.packaging_request import PackagingRequest, ParseResult, SystemFields
 
 SYSTEM_PROMPT = """你是包裝詢價結構化引擎。從客戶文字抽取欄位，規則：
@@ -74,15 +75,53 @@ def _openai_parse(text: str) -> ParseResult:
         response_format=LLMExtraction,
     )
     ext = completion.choices[0].message.parsed
-    req = PackagingRequest(raw_request=text, **ext.model_dump(exclude={"evidence"}))
-    sysf = SystemFields(evidence_by_field=dict(ext.evidence))
-    result = ParseResult(request=req, system=sysf, parser_mode="openai")
-    # 防呆 7：數字類欄位用規則層二次驗證，矛盾以規則層為準
+    return merge_with_rules(text, ext)
+
+
+def _squash(s: str) -> str:
+    return re.sub(r"[\s,，、]", "", s or "")
+
+
+def merge_with_rules(text: str, ext: LLMExtraction) -> ParseResult:
+    """規則層是權威，LLM 只補它抽不到的敘述性欄位。
+
+    防呆 7 的實作：數量、尺寸、日期、金額、偏好一律以規則層為準；
+    其餘 LLM 欄位必須有真的存在於原文的證據，否則清為 null（防幻覺）。
+    """
     baseline = rules_parse(text)
-    if baseline.system.conflicts:
-        result.system.conflicts = baseline.system.conflicts
-        result.request.quantity = None
-    return validate(result)
+    req = PackagingRequest(raw_request=text, **ext.model_dump(exclude={"evidence"}))
+    sysf = SystemFields(evidence_by_field=dict(ext.evidence or {}))
+    haystack = _squash(text)
+
+    # 1) 權威欄位整批以規則層覆蓋，LLM 對這些欄位沒有發言權
+    for attr in RULE_AUTHORITATIVE:
+        setattr(req, attr, getattr(baseline.request, attr))
+        sysf.evidence_by_field.pop(attr, None)
+        ev = baseline.system.evidence_by_field.get(attr)
+        if ev:
+            sysf.evidence_by_field[attr] = ev
+
+    # 2) 其餘欄位：證據不在原文裡就清掉（LLM 捏造的欄位不進系統）
+    for attr in ("product_category", "contents", "purpose", "box_type",
+                 "material_direction", "artwork_status", "print_method",
+                 "print_sides", "lining", "special_structure", "delivery_location"):
+        value = getattr(req, attr)
+        if value in (None, "", []):
+            continue
+        ev = sysf.evidence_by_field.get(attr, "")
+        if _squash(str(value)) not in haystack and _squash(ev) not in haystack:
+            setattr(req, attr, None)
+            sysf.evidence_by_field.pop(attr, None)
+    req.finishes = [f for f in req.finishes if _squash(f) in haystack]
+
+    # 3) 規則層找到的所有矛盾一律繼承，並清空對應欄位
+    sysf.conflicts = list(baseline.system.conflicts)
+    sysf.ambiguous_fields = list(baseline.system.ambiguous_fields)
+    for c in sysf.conflicts:
+        if hasattr(req, c.field):
+            setattr(req, c.field, None)
+
+    return validate(ParseResult(request=req, system=sysf, parser_mode="openai"))
 
 
 def parse_request(text: str, force_offline: bool = False) -> ParseResult:
