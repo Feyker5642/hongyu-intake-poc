@@ -20,14 +20,67 @@ from schemas.packaging_request import (
 
 UNIT_TO_MM = {"mm": 1, "公厘": 1, "毫米": 1, "cm": 10, "公分": 10, "m": 1000, "公尺": 1000, "米": 1000}
 UNIT_PAT = r"(mm|cm|公分|公厘|毫米|公尺|米|m)"
-TRIPLE_PAT = re.compile(r"([\d.]+)\s*[×xX*]\s*([\d.]+)\s*[×xX*]\s*([\d.]+)\s*" + UNIT_PAT)
+SEP = r"\s*(?:[×xX*✕╳]|乘)\s*"
+# 單位可以只出現在最後（20×15×8 公分），也可以每個數字都帶（20cm x 15cm x 8cm）
+TRIPLE_PAT = re.compile(
+    r"([\d.]+)\s*" + UNIT_PAT + r"?" + SEP +
+    r"([\d.]+)\s*" + UNIT_PAT + r"?" + SEP +
+    r"([\d.]+)\s*" + UNIT_PAT + r"?")
 LABELED_PAT = re.compile(r"(長|寬|高|深度|深)\s*(?:大約|約)?\s*([\d.]+)\s*" + UNIT_PAT)
+
+CN_DIGITS = {"零": 0, "一": 1, "二": 2, "兩": 2, "三": 3, "四": 4,
+             "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
+CN_UNITS = {"十": 10, "百": 100, "千": 1000, "萬": 10000}
+
+
+def cn_to_int(s: str):
+    """把「三千」「兩千五百」「一千」轉成數字。看不懂就回 None，不猜。"""
+    total, section, digit = 0, 0, 0
+    for ch in s:
+        if ch in CN_DIGITS:
+            digit = CN_DIGITS[ch]
+        elif ch in CN_UNITS:
+            unit = CN_UNITS[ch]
+            if unit == 10000:
+                section = (section + digit) * unit
+                total += section
+                section = digit = 0
+            else:
+                section += (digit or 1) * unit
+                digit = 0
+        else:
+            return None
+    value = total + section + digit
+    return value or None
 
 CATEGORIES = ["彩盒", "禮盒", "紙盒", "紙箱", "紙袋", "名片", "貼紙", "書冊", "大圖"]
 SUPPORTED = {"彩盒", "禮盒", "紙盒"}
-CONTENTS_HINTS = ["保養品", "食品", "電子零件", "茶葉", "月餅", "蛋糕", "飾品", "3C", "化妝品"]
-FINISH_HINTS = ["霧膜", "亮膜", "局部UV", "局部 UV", "燙金", "壓紋", "開窗", "上光"]
-BOX_TYPE_HINTS = ["天地盒", "磁吸盒", "抽屜盒", "書型盒", "袖套盒", "托盤盒", "天地蓋"]
+CONTENTS_HINTS = ["保養品", "食品", "電子零件", "茶葉", "月餅", "蛋糕", "飾品", "3C",
+                  "化妝品", "精華液", "面膜", "咖啡", "酒", "保健品", "手工皂"]
+# 同義詞：業界口語與英文都對到同一個正式值。左邊是會出現在客戶嘴裡的說法。
+FINISH_ALIASES = {
+    "霧膜": ["霧膜", "消光", "霧面處理", "matte"],
+    "亮膜": ["亮膜", "亮面處理", "gloss"],
+    "局部UV": ["局部UV", "局部 UV", "局部上光", "spot uv"],
+    "燙金": ["燙金", "燙銀", "hot stamp", "foil"],
+    "壓紋": ["壓紋", "壓凸", "emboss"],
+    "開窗": ["開窗", "透明窗", "window"],
+}
+BOX_TYPE_ALIASES = {
+    "天地盒": ["天地盒", "天地蓋", "上下蓋分開", "上下蓋"],
+    "磁吸盒": ["磁吸盒", "磁鐵盒", "磁吸"],
+    "抽屜盒": ["抽屜盒", "抽屜式", "推拉盒"],
+    "書型盒": ["書型盒", "書本盒", "翻蓋"],
+    "袖套盒": ["袖套盒", "外套盒", "sleeve"],
+    "托盤盒": ["托盤盒", "托盤"],
+}
+CATEGORY_ALIASES = {
+    "彩盒": ["彩盒", "color box"],
+    "禮盒": ["禮盒", "gift box"],
+    "紙盒": ["紙盒", "paper box"],
+    "紙箱": ["紙箱", "carton"],
+    "紙袋": ["紙袋", "paper bag"],
+}
 MATERIAL_HINTS = ["白卡", "灰銅", "白銅", "牛皮", "裱浪", "灰板"]
 PREFERENCE_HINTS = ["高級", "質感", "不要太貴", "環保", "便宜", "精緻"]
 AMBIG_MARKERS = ["大約", "左右", "上下", "約"]
@@ -86,13 +139,15 @@ def extract_dimension_sets(text: str) -> list[tuple[Dimensions, str]]:
     sets: list[tuple[Dimensions, str]] = []
     prev_end = 0
     for m in TRIPLE_PAT.finditer(text):
-        unit = m.group(4)
-        dims = Dimensions(
-            length_mm=to_mm(float(m.group(1)), unit),
-            width_mm=to_mm(float(m.group(2)), unit),
-            height_mm=to_mm(float(m.group(3)), unit),
-            original_text=m.group(0),
-        )
+        # 單位可能標在任一數字後面或只標最後；一個都沒有就不算尺寸
+        units = [m.group(2), m.group(4), m.group(6)]
+        unit = next((u for u in reversed(units) if u), None)
+        if unit is None:
+            continue
+        nums = [m.group(1), m.group(3), m.group(5)]
+        vals = [to_mm(float(n), units[i] or unit) for i, n in enumerate(nums)]
+        dims = Dimensions(length_mm=vals[0], width_mm=vals[1], height_mm=vals[2],
+                          original_text=m.group(0))
         sets.append((dims, text[prev_end:m.start()]))
         prev_end = m.end()
     if sets:
@@ -111,8 +166,43 @@ def extract_dimension_sets(text: str) -> list[tuple[Dimensions, str]]:
 
 
 def extract_quantities(text: str) -> list[tuple[int, str]]:
-    return [(int(m.group(1).replace(",", "")), m.group(0))
-            for m in re.finditer(r"([\d,]+)\s*(個|組|盒|份|pcs)", text)]
+    # \b 只能掛英文量詞：中文字在 re 裡也算 \w，「個保」之間沒有邊界會使比對失敗
+    out = [(int(m.group(1).replace(",", "")), m.group(0))
+           for m in re.finditer(r"([\d,]+)\s*(個|組|盒|份|pcs\b|pieces\b|units?\b)", text, re.I)]
+    # 中文數字：「三千個」「兩千五百盒」。量詞跟阿拉伯數字同一組。
+    for m in re.finditer(r"([零一二兩三四五六七八九十百千萬]{1,6})\s*(個|組|盒|份)", text):
+        v = cn_to_int(m.group(1))
+        if v:
+            out.append((v, m.group(0)))
+    # 英文語境：「Need 2000 gift boxes」——數字直接接品名
+    for m in re.finditer(r"\b([\d,]{3,})\s+(?:gift|paper|color)?\s*box(?:es)?", text, re.I):
+        out.append((int(m.group(1).replace(",", "")), m.group(0)))
+    # 去重：同一個位置的值只留一筆
+    seen, dedup = set(), []
+    for v, t in out:
+        if (v, t) not in seen:
+            seen.add((v, t))
+            dedup.append((v, t))
+    return dedup
+
+
+def extract_paper_weight(text: str):
+    """「350P 白卡」「300 磅」「350gsm」→ 磅數。範圍限 150–600，避免吃到數量。"""
+    m = re.search(r"(\d{3})\s*(?:P\b|磅|gsm|g\b)", text, re.I)
+    if m and 150 <= int(m.group(1)) <= 600:
+        return int(m.group(1)), m.group(0)
+    return None, None
+
+
+def extract_location(text: str):
+    """交貨地點：「送到／出貨到／交貨到 X」或台灣縣市名。"""
+    m = re.search(r"(?:送到|出貨到|交貨到|運到|寄到)\s*([一-鿿]{2,6}?[市縣港區]?)(?:[，。,\s]|$)", text)
+    if m:
+        return m.group(1), m.group(0)
+    m = re.search(r"(台北|新北|桃園|台中|台南|高雄|基隆|新竹|嘉義|苗栗|彰化|南投|雲林|屏東|宜蘭|花蓮|台東)(市|縣|港)?", text)
+    if m:
+        return m.group(0), m.group(0)
+    return None, None
 
 
 def extract_date(text: str):
@@ -130,22 +220,44 @@ def extract_date(text: str):
     return (None, m.group(0)) if m else (None, None)
 
 
-def _pick_or_conflict(text, hints, field, req, sysf, attr, guard=None):
-    """找出所有命中值：恰一個就填，多於一個就清空並記 conflict（防呆 5）。"""
+def _find_aliases(text: str, aliases: dict[str, list[str]]) -> list[tuple[str, str]]:
+    """回 [(正式值, 命中的原文說法)]。英文別名不分大小寫。"""
+    low = text.lower()
     hits = []
-    for h in hints:
-        if h not in text:
-            continue
-        if guard and re.search(h + guard, text):
-            continue  # 「白卡還不確定」不算選定
-        norm = h.replace("局部 UV", "局部UV")
-        if norm not in hits:
-            hits.append(norm)
-    if len(hits) == 1:
-        setattr(req, attr, hits[0])
-        sysf.evidence_by_field[field] = hits[0]
-    elif len(hits) > 1:
-        sysf.conflicts.append(Conflict(field=field, values=hits, evidence="；".join(hits)))
+    for canon, words in aliases.items():
+        for w in words:
+            if (w.lower() in low) if w.isascii() else (w in text):
+                hits.append((canon, w))
+                break
+    return hits
+
+
+def _pick_or_conflict(text, hints, field, req, sysf, attr, guard=None):
+    """找出所有命中值：恰一個就填，多於一個就清空並記 conflict（防呆 5）。
+
+    hints 可以是 list（直接比對）或 dict（同義詞表：口語／英文 → 正式值）。
+    """
+    if isinstance(hints, dict):
+        found = _find_aliases(text, hints)
+        values = [c for c, _ in found]
+        evidences = {c: w for c, w in found}
+    else:
+        values = []
+        for h in hints:
+            if h not in text:
+                continue
+            if guard and re.search(h + guard, text):
+                continue  # 「白卡還不確定」不算選定
+            norm = h.replace("局部 UV", "局部UV")
+            if norm not in values:
+                values.append(norm)
+        evidences = {v: v for v in values}
+    if len(values) == 1:
+        setattr(req, attr, values[0])
+        sysf.evidence_by_field[field] = evidences[values[0]]
+    elif len(values) > 1:
+        sysf.conflicts.append(Conflict(field=field, values=values,
+                                       evidence="；".join(evidences[v] for v in values)))
 
 
 def rules_parse(text: str) -> ParseResult:
@@ -154,11 +266,23 @@ def rules_parse(text: str) -> ParseResult:
     sysf = SystemFields()
     ev = sysf.evidence_by_field
 
-    _pick_or_conflict(text, CATEGORIES, "product_category", req, sysf, "product_category")
+    _pick_or_conflict(text, CATEGORY_ALIASES, "product_category", req, sysf, "product_category")
     _pick_or_conflict(text, CONTENTS_HINTS, "contents", req, sysf, "contents")
-    _pick_or_conflict(text, BOX_TYPE_HINTS, "box_type", req, sysf, "box_type")
+    _pick_or_conflict(text, BOX_TYPE_ALIASES, "box_type", req, sysf, "box_type")
     _pick_or_conflict(text, MATERIAL_HINTS, "material_direction", req, sysf,
                       "material_direction", guard=r".{0,6}(不確定|未定|再評估|先評估)")
+
+    gsm, gsm_ev = extract_paper_weight(text)
+    if gsm:
+        req.paper_weight_gsm = gsm
+        ev["paper_weight_gsm"] = gsm_ev
+    loc, loc_ev = extract_location(text)
+    if loc:
+        req.delivery_location = loc
+        ev["delivery_location"] = loc_ev
+    if re.search(r"打樣|打個樣|樣品先", text):
+        req.proofing_needed = "是"
+        ev["proofing_needed"] = re.search(r".{0,4}(打樣|打個樣|樣品先)", text).group(0)
 
     qs = extract_quantities(text)
     uniq = sorted({q for q, _ in qs})
@@ -194,12 +318,12 @@ def rules_parse(text: str) -> ParseResult:
             setattr(req, target, None)
             ev.pop(target, None)
 
-    for f in FINISH_HINTS:
-        norm = f.replace("局部 UV", "局部UV")
-        if f in text and norm not in req.finishes:
-            req.finishes.append(norm)
+    finish_hits = _find_aliases(text, FINISH_ALIASES)
+    for canon, _w in finish_hits:
+        if canon not in req.finishes:
+            req.finishes.append(canon)
     if req.finishes:
-        ev["finishes"] = "、".join(req.finishes)
+        ev["finishes"] = "、".join(w for _, w in finish_hits)
 
     if re.search(r"(AI|ai)\s*(設計)?檔", text):
         req.artwork_status = "已有AI設計檔"

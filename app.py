@@ -21,14 +21,49 @@ DEMO = json.loads((ROOT / "data" / "demo_cases.json").read_text(encoding="utf-8"
 TAXONOMY = json.loads((ROOT / "data" / "public_taxonomy.json").read_text(encoding="utf-8"))
 NONE = "（未提供）"
 
-st.set_page_config(page_title="宏宇工藝 AI 詢價轉單助手", layout="wide")
+st.set_page_config(page_title="宏宇工藝 AI 詢價轉單助手", page_icon="📦", layout="wide")
+
+# 設計語彙：印刷業的客戶看得出版面有沒有被在乎。字級層次、留白、
+# 狀態色票（紅=缺、琥珀=疑、藍=AI、綠=人）全部集中在這裡。
+st.markdown("""<style>
+.block-container { padding-top: 2.2rem; max-width: 1150px; }
+h1 { font-size: 1.72rem !important; letter-spacing: .01em; }
+.hy-chips { display:flex; gap:8px; flex-wrap:wrap; margin:.2rem 0 .9rem; }
+.hy-chip { font-size:.78rem; padding:3px 12px; border-radius:999px;
+  background:#F1EFE8; color:#444441; border:1px solid #D3D1C7; }
+.hy-chip.warn { background:#FAEEDA; color:#854F0B; border-color:#FAC775; }
+.hy-note { font-size:.82rem; color:#5F5E5A; margin-bottom:1.1rem; }
+.hy-sec { display:flex; align-items:center; gap:10px; margin:1.6rem 0 .6rem; }
+.hy-sec .n { width:26px; height:26px; border-radius:50%; background:#0F6E56;
+  color:#fff; font-size:.85rem; display:flex; align-items:center; justify-content:center; }
+.hy-sec .t { font-size:1.12rem; font-weight:600; }
+.hy-badge { display:inline-block; font-size:.74rem; padding:2px 10px;
+  border-radius:999px; white-space:nowrap; }
+.hy-none    { background:#FCEBEB; color:#A32D2D; border:1px solid #F7C1C1; }
+.hy-ai      { background:#E6F1FB; color:#185FA5; border:1px solid #B5D4F4; }
+.hy-unsure  { background:#FAEEDA; color:#854F0B; border:1px solid #FAC775; }
+.hy-human   { background:#EAF3DE; color:#3B6D11; border:1px solid #C0DD97; }
+.hy-ev { font-size:.74rem; color:#888780; }
+.hy-missing-item { color:#A32D2D; font-weight:600; }
+</style>""", unsafe_allow_html=True)
+
 st.title("宏宇工藝 AI 詢價轉單助手")
-st.warning(
-    "**Concept Demo · 全部使用合成資料 · 非正式報價系統**　"
-    "欄位定義整理自公開同業表單，不代表宏宇實際材料、價格或產能。"
-    "請勿輸入真實客戶個資或機密價格。",
-    icon="⚠️",
+st.markdown(
+    '<div class="hy-chips">'
+    '<span class="hy-chip warn">Concept Demo</span>'
+    '<span class="hy-chip warn">全部使用合成資料</span>'
+    '<span class="hy-chip warn">非正式報價系統</span>'
+    '<span class="hy-chip">ERP 前的詢價整理層</span>'
+    "</div>"
+    '<div class="hy-note">欄位定義整理自公開同業表單，不代表宏宇實際材料、價格或產能。'
+    "請勿輸入真實客戶個資或機密價格。</div>",
+    unsafe_allow_html=True,
 )
+
+
+def section(n: int, title: str):
+    st.markdown(f'<div class="hy-sec"><div class="n">{n}</div>'
+                f'<div class="t">{title}</div></div>', unsafe_allow_html=True)
 
 for key, default in [("result", None), ("confirmed", False),
                      ("text", ""), ("edited", set())]:
@@ -63,13 +98,21 @@ def load_case(text: str):
 
 
 # ── 第一區：原始需求 ────────────────────────────────────────────────
-st.header("1. 客戶原始需求")
+section(1, "客戶原始需求")
+
+# 正式導入時，需求從既有管道自動流入——宏宇官網本來就有客戶詢問表單。
+# Demo 階段用選單標示來源、用貼上模擬內容；接管道是之後的工程，不是這一版。
+src = st.radio("來源管道", ["官網詢問單", "Email", "LINE", "電話紀錄"],
+               horizontal=True, key="w_source_channel")
+st.caption("正式導入時由這些管道自動接入（官網表單目前收：姓名／公司、電話、"
+           "需求項目、詳細描述——正好是結構化前的原始輸入）。Demo 以貼上文字模擬。")
+
 cols = st.columns(len(DEMO["cases"]))
 for col, case in zip(cols, DEMO["cases"]):
     col.button(case["title"], use_container_width=True,
                on_click=load_case, args=(case["text"],), key=f"case_{case['id']}")
 
-st.text_area("貼上 Email、LINE 或電話紀錄（合成資料）", height=140,
+st.text_area(f"模擬從「{src}」收到的內容（合成資料）", height=140,
              key="text", on_change=on_text_change)
 
 left, right = st.columns([1, 3])
@@ -78,6 +121,7 @@ if left.button("解析需求", type="primary", use_container_width=True):
         st.error("請先貼上或載入一段需求文字。")
     else:
         st.session_state.result = parse_request(st.session_state.text)
+        st.session_state.result.request.source_channel = src
         st.session_state.confirmed = False
         st.session_state.edited = set()
 
@@ -92,17 +136,22 @@ else:
     right.success("解析模式：OpenAI Structured Outputs（數字、尺寸、日期仍以規則層為準）")
 
 # ── 第二區：AI 結構化結果 ──────────────────────────────────────────
-st.header("2. AI 結構化結果（可修改）")
+section(2, "AI 結構化結果（可修改）")
 req, sysf = result.request, result.system
-BADGE = {"已確認": "✅ 已確認", "AI抽取": "🤖 AI 抽取",
-         "不確定": "⚠️ 不確定", "未提供": "➖ 未提供"}
+# 未提供＝紅：這一欄就是要刺眼，它是業務接下來要追的東西
+BADGE = {"已確認": '<span class="hy-badge hy-human">已確認</span>',
+         "AI抽取": '<span class="hy-badge hy-ai">AI 抽取</span>',
+         "不確定": '<span class="hy-badge hy-unsure">不確定</span>',
+         "未提供": '<span class="hy-badge hy-none">未提供</span>'}
 
 
 def meta(col, field: str):
-    col.caption(BADGE.get(sysf.status_by_field.get(field, "未提供"), "➖ 未提供"))
+    status = sysf.status_by_field.get(field, "未提供")
     ev = sysf.evidence_by_field.get(field)
+    html = BADGE[status]
     if ev:
-        col.caption(f"原文：「{ev}」")
+        html += f'<div class="hy-ev">原文：「{ev}」</div>'
+    col.markdown(html, unsafe_allow_html=True)
 
 
 def select_field(label, field, options, current):
@@ -125,7 +174,8 @@ def text_field(label, field, current, **kw):
 
 
 def dims_editor(label, field, dims: Dimensions | None) -> Dimensions | None:
-    st.markdown(f"**{label}**　{BADGE.get(sysf.status_by_field.get(field, '未提供'), '')}")
+    st.markdown(f"**{label}**　{BADGE[sysf.status_by_field.get(field, '未提供')]}",
+                unsafe_allow_html=True)
     c = st.columns(3)
     vals = []
     for i, (name, attr) in enumerate([("長", "length_mm"), ("寬", "width_mm"), ("高", "height_mm")]):
@@ -192,10 +242,13 @@ if st.session_state.pop("date_rejected", None):
 st.session_state.result = validate(result, confirmed_fields=set(st.session_state.edited))
 
 # ── 第三區：檢查與下一步 ───────────────────────────────────────────
-st.header("3. 檢查與下一步")
+section(3, "檢查與下一步")
 sysf = st.session_state.result.system
-m1, m2, m3 = st.columns(3)
-m1.metric("資料完整度", sysf.data_completeness)
+filled, total = (int(x) for x in sysf.data_completeness.split("/"))
+m1, m2, m3 = st.columns([2, 1, 1])
+with m1:
+    st.caption(f"資料完整度 {sysf.data_completeness}")
+    st.progress(filled / total)
 m2.metric("待補欄位", len(sysf.missing_fields))
 m3.metric("矛盾", len(sysf.conflicts))
 
@@ -207,7 +260,10 @@ for a_ in sysf.ambiguous_fields:
 for n in sysf.risk_notes:
     st.warning(f"**風險**：{n}", icon="⚠️")
 if sysf.missing_fields:
-    st.markdown("**待補資料**：" + "、".join(sysf.missing_fields))
+    st.markdown("**待補資料**：" +
+                "、".join(f'<span class="hy-missing-item">{f}</span>'
+                          for f in sysf.missing_fields),
+                unsafe_allow_html=True)
 
 st.divider()
 b1, b2, b3 = st.columns(3)
