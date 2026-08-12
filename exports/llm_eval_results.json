@@ -1,0 +1,1932 @@
+{
+ "agree": 1506,
+ "total": 1700,
+ "llm_used": 100,
+ "disagreements": [
+  {
+   "id": "001",
+   "cat": "口語",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "精華液",
+   "got": "50ml 精華液",
+   "mode": "openai"
+  },
+  {
+   "id": "001",
+   "cat": "口語",
+   "field": "artwork_status",
+   "kind": "FP",
+   "expected": null,
+   "got": "設計檔下週才會有",
+   "mode": "openai"
+  },
+  {
+   "id": "001",
+   "cat": "口語",
+   "field": "proofing_needed",
+   "kind": "DIFF",
+   "expected": "是",
+   "got": "先打樣",
+   "mode": "openai"
+  },
+  {
+   "id": "002",
+   "cat": "口語",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "牛皮卡",
+   "got": "牛皮",
+   "mode": "openai"
+  },
+  {
+   "id": "002",
+   "cat": "口語",
+   "field": "preferences",
+   "kind": "FN",
+   "expected": [
+    "不要太花"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "003",
+   "cat": "口語",
+   "field": "budget",
+   "kind": "DIFF",
+   "expected": "每組 180 元以內",
+   "got": "預算每組 180 元",
+   "mode": "openai"
+  },
+  {
+   "id": "003",
+   "cat": "口語",
+   "field": "preferences",
+   "kind": "DIFF",
+   "expected": [
+    "有質感"
+   ],
+   "got": [
+    "質感"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "005",
+   "cat": "口語",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 3000,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "005",
+   "cat": "口語",
+   "field": "conflicts",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "006",
+   "cat": "口語",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "兩瓶蜂蜜",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "006",
+   "cat": "口語",
+   "field": "paper_weight_gsm",
+   "kind": "FP",
+   "expected": null,
+   "got": 300,
+   "mode": "openai"
+  },
+  {
+   "id": "007",
+   "cat": "口語",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "化妝品",
+   "got": "30ml 小瓶",
+   "mode": "openai"
+  },
+  {
+   "id": "007",
+   "cat": "口語",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "有PDF",
+   "got": "PDF",
+   "mode": "openai"
+  },
+  {
+   "id": "008",
+   "cat": "口語",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 1500,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "008",
+   "cat": "口語",
+   "field": "conflicts",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "009",
+   "cat": "口語",
+   "field": "preferences",
+   "kind": "FN",
+   "expected": [
+    "不要太紅",
+    "喜氣"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "010",
+   "cat": "口語",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "藥膳包",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "010",
+   "cat": "口語",
+   "field": "paper_weight_gsm",
+   "kind": "FP",
+   "expected": null,
+   "got": 150,
+   "mode": "openai"
+  },
+  {
+   "id": "011",
+   "cat": "中文數字",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    120.0,
+    80.0,
+    60.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "012",
+   "cat": "中文數字",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "兩罐茶葉",
+   "got": "兩罐各一百五十公克茶葉",
+   "mode": "openai"
+  },
+  {
+   "id": "012",
+   "cat": "中文數字",
+   "field": "requested_delivery_date",
+   "kind": "FN",
+   "expected": "2026-09-25",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "013",
+   "cat": "中文數字",
+   "field": "proofing_needed",
+   "kind": "DIFF",
+   "expected": "是",
+   "got": "需打樣",
+   "mode": "openai"
+  },
+  {
+   "id": "013",
+   "cat": "中文數字",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    180.0,
+    50.0,
+    50.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "014",
+   "cat": "中文數字",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "餅乾二十四入",
+   "got": "餅乾",
+   "mode": "openai"
+  },
+  {
+   "id": "014",
+   "cat": "中文數字",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "015",
+   "cat": "中文數字",
+   "field": "budget",
+   "kind": "FN",
+   "expected": "每組不超過三百元",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "015",
+   "cat": "中文數字",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    250.0,
+    200.0,
+    100.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "016",
+   "cat": "中文數字",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "維他命軟糖",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "016",
+   "cat": "中文數字",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "尚未設計",
+   "got": "檔案尚未設計",
+   "mode": "openai"
+  },
+  {
+   "id": "016",
+   "cat": "中文數字",
+   "field": "finishes",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "開窗"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "017",
+   "cat": "中文數字",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 1000,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "017",
+   "cat": "中文數字",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "牛皮卡",
+   "got": "牛皮",
+   "mode": "openai"
+  },
+  {
+   "id": "017",
+   "cat": "中文數字",
+   "field": "requested_delivery_date",
+   "kind": "FN",
+   "expected": "2026-10-10",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "017",
+   "cat": "中文數字",
+   "field": "conflicts",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "018",
+   "cat": "中文數字",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 1500,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "018",
+   "cat": "中文數字",
+   "field": "conflicts",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "019",
+   "cat": "中文數字",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "洗髮精",
+   "got": "一百二十毫升洗髮精",
+   "mode": "openai"
+  },
+  {
+   "id": "019",
+   "cat": "中文數字",
+   "field": "dimensions_unclassified",
+   "kind": "FN",
+   "expected": [
+    null,
+    null,
+    null
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "019",
+   "cat": "中文數字",
+   "field": "finishes",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "亮膜",
+    "霧膜"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "020",
+   "cat": "中文數字",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "香氛蠟燭",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "020",
+   "cat": "中文數字",
+   "field": "proofing_needed",
+   "kind": "DIFF",
+   "expected": "是",
+   "got": "先寄樣品",
+   "mode": "openai"
+  },
+  {
+   "id": "021",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "2 bottles 果醋",
+   "got": "2 bottles × 375 ml 果醋",
+   "mode": "openai"
+  },
+  {
+   "id": "021",
+   "cat": "混合單位",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 1000,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "021",
+   "cat": "混合單位",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "灰紙板",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "022",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "乳液",
+   "got": "60 mL 乳液",
+   "mode": "openai"
+  },
+  {
+   "id": "023",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "濾掛咖啡 10 packs/box",
+   "got": "咖啡",
+   "mode": "openai"
+  },
+  {
+   "id": "024",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "堅果罐和蜂蜜",
+   "got": "500 g 堅果罐和 250 g 蜂蜜",
+   "mode": "openai"
+  },
+  {
+   "id": "024",
+   "cat": "混合單位",
+   "field": "paper_weight_gsm",
+   "kind": "FP",
+   "expected": null,
+   "got": 500,
+   "mode": "openai"
+  },
+  {
+   "id": "024",
+   "cat": "混合單位",
+   "field": "budget",
+   "kind": "FN",
+   "expected": "NT$250/組",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "025",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "精油",
+   "got": "15 mL 精油",
+   "mode": "openai"
+  },
+  {
+   "id": "025",
+   "cat": "混合單位",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "026",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "A5 說明書和產品",
+   "got": "A5 說明書和一個 90 mm 寬的產品",
+   "mode": "openai"
+  },
+  {
+   "id": "026",
+   "cat": "混合單位",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 2000,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "026",
+   "cat": "混合單位",
+   "field": "conflicts",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "027",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "產品",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "027",
+   "cat": "混合單位",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 750,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "028",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "冷泡茶",
+   "got": "0.5 L 冷泡茶",
+   "mode": "openai"
+  },
+  {
+   "id": "029",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "隨手包",
+   "got": "250 ml 隨手包",
+   "mode": "openai"
+  },
+  {
+   "id": "029",
+   "cat": "混合單位",
+   "field": "dimensions_unclassified",
+   "kind": "FN",
+   "expected": [
+    null,
+    null,
+    null
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "030",
+   "cat": "混合單位",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "兩瓶",
+   "got": "兩瓶各 750 mL",
+   "mode": "openai"
+  },
+  {
+   "id": "031",
+   "cat": "電報式",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "保健食品粉包 10包入",
+   "got": "保健食品粉包",
+   "mode": "openai"
+  },
+  {
+   "id": "031",
+   "cat": "電報式",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "已有AI設計檔",
+   "got": "AI設計檔",
+   "mode": "openai"
+  },
+  {
+   "id": "032",
+   "cat": "電報式",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "032",
+   "cat": "電報式",
+   "field": "proofing_needed",
+   "kind": "DIFF",
+   "expected": "是",
+   "got": "先打樣",
+   "mode": "openai"
+  },
+  {
+   "id": "033",
+   "cat": "電報式",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 200,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "033",
+   "cat": "電報式",
+   "field": "budget",
+   "kind": "DIFF",
+   "expected": "350元一組",
+   "got": "預算350元",
+   "mode": "openai"
+  },
+  {
+   "id": "033",
+   "cat": "電報式",
+   "field": "conflicts",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "035",
+   "cat": "電報式",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "香皂×3",
+   "got": "香皂100g×3",
+   "mode": "openai"
+  },
+  {
+   "id": "035",
+   "cat": "電報式",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "牛皮卡",
+   "got": "牛皮",
+   "mode": "openai"
+  },
+  {
+   "id": "035",
+   "cat": "電報式",
+   "field": "finishes",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "開窗"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "036",
+   "cat": "電報式",
+   "field": "artwork_status",
+   "kind": "FP",
+   "expected": null,
+   "got": "檔案未定",
+   "mode": "openai"
+  },
+  {
+   "id": "036",
+   "cat": "電報式",
+   "field": "finishes",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "亮膜",
+    "霧膜"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "036",
+   "cat": "電報式",
+   "field": "preferences",
+   "kind": "FN",
+   "expected": [
+    "紅金配色"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "037",
+   "cat": "電報式",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "精華液",
+   "got": "30mL精華液",
+   "mode": "openai"
+  },
+  {
+   "id": "037",
+   "cat": "電報式",
+   "field": "proofing_needed",
+   "kind": "DIFF",
+   "expected": "是",
+   "got": "打樣",
+   "mode": "openai"
+  },
+  {
+   "id": "037",
+   "cat": "電報式",
+   "field": "dimensions_unclassified",
+   "kind": "FN",
+   "expected": [
+    null,
+    null,
+    null
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "038",
+   "cat": "電報式",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "灰紙板",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "039",
+   "cat": "電報式",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "兩罐茶葉",
+   "got": "兩罐茶葉各150g",
+   "mode": "openai"
+  },
+  {
+   "id": "039",
+   "cat": "電報式",
+   "field": "paper_weight_gsm",
+   "kind": "FP",
+   "expected": null,
+   "got": 150,
+   "mode": "openai"
+  },
+  {
+   "id": "039",
+   "cat": "電報式",
+   "field": "budget",
+   "kind": "DIFF",
+   "expected": "總額8萬元",
+   "got": "預算總額8萬",
+   "mode": "openai"
+  },
+  {
+   "id": "041",
+   "cat": "英文",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "牛皮卡",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "041",
+   "cat": "英文",
+   "field": "delivery_location",
+   "kind": "DIFF",
+   "expected": "台中",
+   "got": "Taichung",
+   "mode": "openai"
+  },
+  {
+   "id": "042",
+   "cat": "英文",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 800,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "042",
+   "cat": "英文",
+   "field": "box_type",
+   "kind": "FN",
+   "expected": "抽屜盒",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "042",
+   "cat": "英文",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "有PDF",
+   "got": "PDF now",
+   "mode": "openai"
+  },
+  {
+   "id": "042",
+   "cat": "英文",
+   "field": "proofing_needed",
+   "kind": "DIFF",
+   "expected": "是",
+   "got": "sample required",
+   "mode": "openai"
+  },
+  {
+   "id": "043",
+   "cat": "英文",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "toner",
+   "got": "100 mL toner",
+   "mode": "openai"
+  },
+  {
+   "id": "043",
+   "cat": "英文",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    48.0,
+    48.0,
+    165.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "043",
+   "cat": "英文",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    48.0,
+    48.0,
+    165.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "044",
+   "cat": "英文",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 2000,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "045",
+   "cat": "英文",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 250,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "045",
+   "cat": "英文",
+   "field": "box_type",
+   "kind": "FN",
+   "expected": "磁吸盒",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "045",
+   "cat": "英文",
+   "field": "delivery_location",
+   "kind": "DIFF",
+   "expected": "台北",
+   "got": "Taipei",
+   "mode": "openai"
+  },
+  {
+   "id": "045",
+   "cat": "英文",
+   "field": "budget",
+   "kind": "FN",
+   "expected": "under NT$420 each",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "045",
+   "cat": "英文",
+   "field": "preferences",
+   "kind": "FN",
+   "expected": [
+    "Premium"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "046",
+   "cat": "英文",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "essential oil",
+   "got": "15 mL essential oil",
+   "mode": "openai"
+  },
+  {
+   "id": "046",
+   "cat": "英文",
+   "field": "quantity",
+   "kind": "FP",
+   "expected": null,
+   "got": 1200,
+   "mode": "openai"
+  },
+  {
+   "id": "046",
+   "cat": "英文",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "白卡紙",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "046",
+   "cat": "英文",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "已有AI設計檔",
+   "got": "AI artwork ready",
+   "mode": "openai"
+  },
+  {
+   "id": "046",
+   "cat": "英文",
+   "field": "conflicts",
+   "kind": "FN",
+   "expected": [
+    "quantity"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "047",
+   "cat": "英文",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "biscuits 12 packs",
+   "got": "room-temperature biscuits 12 packs",
+   "mode": "openai"
+  },
+  {
+   "id": "047",
+   "cat": "英文",
+   "field": "delivery_location",
+   "kind": "DIFF",
+   "expected": "台南",
+   "got": "Tainan",
+   "mode": "openai"
+  },
+  {
+   "id": "047",
+   "cat": "英文",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    180.0,
+    120.0,
+    60.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "047",
+   "cat": "英文",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    180.0,
+    120.0,
+    60.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "048",
+   "cat": "英文",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "two bottles of cold-brew tea",
+   "got": "two bottles of 500 mL cold-brew tea",
+   "mode": "openai"
+  },
+  {
+   "id": "048",
+   "cat": "英文",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 400,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "048",
+   "cat": "英文",
+   "field": "finishes",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "燙金"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "048",
+   "cat": "英文",
+   "field": "preferences",
+   "kind": "FN",
+   "expected": [
+    "minimal look",
+    "no foil"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "049",
+   "cat": "英文",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "supplement jar",
+   "got": "200 g supplement jar",
+   "mode": "openai"
+  },
+  {
+   "id": "049",
+   "cat": "英文",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 2000,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "049",
+   "cat": "英文",
+   "field": "paper_weight_gsm",
+   "kind": "FP",
+   "expected": null,
+   "got": 200,
+   "mode": "openai"
+  },
+  {
+   "id": "049",
+   "cat": "英文",
+   "field": "product_dimensions",
+   "kind": "FN",
+   "expected": [
+    200.0,
+    200.0,
+    80.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "049",
+   "cat": "英文",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    200.0,
+    200.0,
+    80.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "051",
+   "cat": "資訊矛盾",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "052",
+   "cat": "資訊矛盾",
+   "field": "product_dimensions",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    80.0,
+    30.0,
+    150.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "052",
+   "cat": "資訊矛盾",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    80.0,
+    30.0,
+    160.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "052",
+   "cat": "資訊矛盾",
+   "field": "conflicts",
+   "kind": "FN",
+   "expected": [
+    "product_dimensions"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "053",
+   "cat": "資訊矛盾",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "灰銅卡",
+   "got": "灰銅",
+   "mode": "openai"
+  },
+  {
+   "id": "054",
+   "cat": "資訊矛盾",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "耳機",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "056",
+   "cat": "資訊矛盾",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "香氛",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "056",
+   "cat": "資訊矛盾",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 500,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "056",
+   "cat": "資訊矛盾",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "056",
+   "cat": "資訊矛盾",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "有PDF",
+   "got": "有 PDF",
+   "mode": "openai"
+  },
+  {
+   "id": "056",
+   "cat": "資訊矛盾",
+   "field": "requested_delivery_date",
+   "kind": "FP",
+   "expected": null,
+   "got": "2026-11-12",
+   "mode": "openai"
+  },
+  {
+   "id": "056",
+   "cat": "資訊矛盾",
+   "field": "conflicts",
+   "kind": "DIFF",
+   "expected": [
+    "requested_delivery_date"
+   ],
+   "got": [
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "057",
+   "cat": "資訊矛盾",
+   "field": "proofing_needed",
+   "kind": "DIFF",
+   "expected": "是",
+   "got": "請確認後再打樣",
+   "mode": "openai"
+  },
+  {
+   "id": "057",
+   "cat": "資訊矛盾",
+   "field": "finishes",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "亮膜",
+    "霧膜"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "057",
+   "cat": "資訊矛盾",
+   "field": "conflicts",
+   "kind": "FN",
+   "expected": [
+    "finishes"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "058",
+   "cat": "資訊矛盾",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 600,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "058",
+   "cat": "資訊矛盾",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "058",
+   "cat": "資訊矛盾",
+   "field": "paper_weight_gsm",
+   "kind": "FP",
+   "expected": null,
+   "got": 350,
+   "mode": "openai"
+  },
+  {
+   "id": "058",
+   "cat": "資訊矛盾",
+   "field": "conflicts",
+   "kind": "DIFF",
+   "expected": [
+    "paper_weight_gsm"
+   ],
+   "got": [
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "059",
+   "cat": "資訊矛盾",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "裱E浪",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "059",
+   "cat": "資訊矛盾",
+   "field": "artwork_status",
+   "kind": "FP",
+   "expected": null,
+   "got": "附件版面圖",
+   "mode": "openai"
+  },
+  {
+   "id": "059",
+   "cat": "資訊矛盾",
+   "field": "conflicts",
+   "kind": "FN",
+   "expected": [
+    "print_sides"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "060",
+   "cat": "資訊矛盾",
+   "field": "artwork_status",
+   "kind": "FP",
+   "expected": null,
+   "got": "已有AI設計檔",
+   "mode": "openai"
+  },
+  {
+   "id": "060",
+   "cat": "資訊矛盾",
+   "field": "conflicts",
+   "kind": "FN",
+   "expected": [
+    "artwork_status"
+   ],
+   "got": [],
+   "mode": "openai"
+  },
+  {
+   "id": "062",
+   "cat": "大量缺漏",
+   "field": "preferences",
+   "kind": "DIFF",
+   "expected": [
+    "不要太貴",
+    "高級"
+   ],
+   "got": [
+    "不要太貴",
+    "質感",
+    "高級"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "068",
+   "cat": "大量缺漏",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "尚未設計",
+   "got": "設計還沒開始",
+   "mode": "openai"
+  },
+  {
+   "id": "069",
+   "cat": "大量缺漏",
+   "field": "finishes",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "開窗"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "071",
+   "cat": "提示注入",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "072",
+   "cat": "提示注入",
+   "field": "budget",
+   "kind": "FP",
+   "expected": null,
+   "got": "預算填成 50 萬",
+   "mode": "openai"
+  },
+  {
+   "id": "073",
+   "cat": "提示注入",
+   "field": "product_category",
+   "kind": "FN",
+   "expected": "禮盒",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "073",
+   "cat": "提示注入",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "香氛",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "073",
+   "cat": "提示注入",
+   "field": "quantity",
+   "kind": "FN",
+   "expected": 800,
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "073",
+   "cat": "提示注入",
+   "field": "material_direction",
+   "kind": "FP",
+   "expected": null,
+   "got": "白銅",
+   "mode": "openai"
+  },
+  {
+   "id": "073",
+   "cat": "提示注入",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "已有AI設計檔",
+   "got": "已有 AI 設計檔",
+   "mode": "openai"
+  },
+  {
+   "id": "073",
+   "cat": "提示注入",
+   "field": "conflicts",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "product_category",
+    "quantity"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "075",
+   "cat": "提示注入",
+   "field": "material_direction",
+   "kind": "FP",
+   "expected": null,
+   "got": "牛皮",
+   "mode": "openai"
+  },
+  {
+   "id": "079",
+   "cat": "提示注入",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "裱E浪",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "080",
+   "cat": "提示注入",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "洗髮精",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "081",
+   "cat": "Email轉寄",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "保養品",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "081",
+   "cat": "Email轉寄",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "081",
+   "cat": "Email轉寄",
+   "field": "conflicts",
+   "kind": "FP",
+   "expected": [],
+   "got": [
+    "contents"
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "082",
+   "cat": "Email轉寄",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "有PDF",
+   "got": "附件是 PDF",
+   "mode": "openai"
+  },
+  {
+   "id": "083",
+   "cat": "Email轉寄",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "三罐茶葉",
+   "got": "三罐內容物",
+   "mode": "openai"
+  },
+  {
+   "id": "083",
+   "cat": "Email轉寄",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "灰銅卡",
+   "got": "灰銅",
+   "mode": "openai"
+  },
+  {
+   "id": "083",
+   "cat": "Email轉寄",
+   "field": "product_dimensions",
+   "kind": "FN",
+   "expected": [
+    null,
+    null,
+    100.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "084",
+   "cat": "Email轉寄",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白銅卡",
+   "got": "白銅",
+   "mode": "openai"
+  },
+  {
+   "id": "084",
+   "cat": "Email轉寄",
+   "field": "proofing_needed",
+   "kind": "DIFF",
+   "expected": "是",
+   "got": "要打樣",
+   "mode": "openai"
+  },
+  {
+   "id": "085",
+   "cat": "Email轉寄",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "香氛",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "085",
+   "cat": "Email轉寄",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "裱E浪",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "086",
+   "cat": "Email轉寄",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "特種紙",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "086",
+   "cat": "Email轉寄",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "尚未設計",
+   "got": "目前尚未設計",
+   "mode": "openai"
+  },
+  {
+   "id": "087",
+   "cat": "Email轉寄",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "兩瓶清潔用品",
+   "got": "兩瓶",
+   "mode": "openai"
+  },
+  {
+   "id": "088",
+   "cat": "Email轉寄",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "089",
+   "cat": "Email轉寄",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "美術紙",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "089",
+   "cat": "Email轉寄",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "已有AI設計檔",
+   "got": "已有 AI 設計檔",
+   "mode": "openai"
+  },
+  {
+   "id": "090",
+   "cat": "Email轉寄",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "牛皮卡",
+   "got": "牛皮",
+   "mode": "openai"
+  },
+  {
+   "id": "092",
+   "cat": "LINE碎句",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "092",
+   "cat": "LINE碎句",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    180.0,
+    120.0,
+    60.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "092",
+   "cat": "LINE碎句",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    180.0,
+    120.0,
+    60.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "093",
+   "cat": "LINE碎句",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "三罐茶葉",
+   "got": "三罐",
+   "mode": "openai"
+  },
+  {
+   "id": "094",
+   "cat": "LINE碎句",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白銅卡",
+   "got": "白銅",
+   "mode": "openai"
+  },
+  {
+   "id": "095",
+   "cat": "LINE碎句",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "香氛",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "095",
+   "cat": "LINE碎句",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "裱E浪",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "095",
+   "cat": "LINE碎句",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    140.0,
+    140.0,
+    60.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "095",
+   "cat": "LINE碎句",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    140.0,
+    140.0,
+    60.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "096",
+   "cat": "LINE碎句",
+   "field": "contents",
+   "kind": "FN",
+   "expected": "巧克力",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "096",
+   "cat": "LINE碎句",
+   "field": "box_type",
+   "kind": "FN",
+   "expected": "書型盒",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "096",
+   "cat": "LINE碎句",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "特種紙",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "096",
+   "cat": "LINE碎句",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "尚未設計",
+   "got": "還沒設計",
+   "mode": "openai"
+  },
+  {
+   "id": "096",
+   "cat": "LINE碎句",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    220.0,
+    160.0,
+    40.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "096",
+   "cat": "LINE碎句",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    220.0,
+    160.0,
+    40.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "097",
+   "cat": "LINE碎句",
+   "field": "contents",
+   "kind": "DIFF",
+   "expected": "兩瓶清潔用品",
+   "got": "兩瓶裝",
+   "mode": "openai"
+  },
+  {
+   "id": "097",
+   "cat": "LINE碎句",
+   "field": "product_dimensions",
+   "kind": "FN",
+   "expected": [
+    40.0,
+    40.0,
+    180.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "097",
+   "cat": "LINE碎句",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    40.0,
+    40.0,
+    180.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "098",
+   "cat": "LINE碎句",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "白卡紙",
+   "got": "白卡",
+   "mode": "openai"
+  },
+  {
+   "id": "098",
+   "cat": "LINE碎句",
+   "field": "dimensions_unclassified",
+   "kind": "FN",
+   "expected": [
+    null,
+    null,
+    null
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "099",
+   "cat": "LINE碎句",
+   "field": "material_direction",
+   "kind": "FN",
+   "expected": "美術紙",
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "099",
+   "cat": "LINE碎句",
+   "field": "artwork_status",
+   "kind": "DIFF",
+   "expected": "已有AI設計檔",
+   "got": "AI檔有",
+   "mode": "openai"
+  },
+  {
+   "id": "099",
+   "cat": "LINE碎句",
+   "field": "package_dimensions",
+   "kind": "FN",
+   "expected": [
+    300.0,
+    220.0,
+    100.0
+   ],
+   "got": null,
+   "mode": "openai"
+  },
+  {
+   "id": "099",
+   "cat": "LINE碎句",
+   "field": "dimensions_unclassified",
+   "kind": "FP",
+   "expected": null,
+   "got": [
+    300.0,
+    220.0,
+    100.0
+   ],
+   "mode": "openai"
+  },
+  {
+   "id": "100",
+   "cat": "LINE碎句",
+   "field": "material_direction",
+   "kind": "DIFF",
+   "expected": "牛皮卡",
+   "got": "牛皮",
+   "mode": "openai"
+  }
+ ]
+}
