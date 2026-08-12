@@ -1,0 +1,366 @@
+[
+  {
+    "case": "案例 1：相對完整",
+    "input": "我們想做 3,000 個保養品彩盒，產品本身是 5×5×12 公分，希望外盒做霧膜和局部 UV，已經有 AI 設計檔，請在 2026 年 9 月 30 日前交貨。紙材還不確定，先協助評估。",
+    "export": {
+      "source_channel": null,
+      "company": null,
+      "contact_name": null,
+      "contact_info": null,
+      "raw_request": "我們想做 3,000 個保養品彩盒，產品本身是 5×5×12 公分，希望外盒做霧膜和局部 UV，已經有 AI 設計檔，請在 2026 年 9 月 30 日前交貨。紙材還不確定，先協助評估。",
+      "product_category": "彩盒",
+      "contents": "保養品",
+      "purpose": null,
+      "product_dimensions": {
+        "length_mm": 50.0,
+        "width_mm": 50.0,
+        "height_mm": 120.0,
+        "original_text": "5×5×12 公分"
+      },
+      "contents_weight_or_volume": null,
+      "storage_transport": null,
+      "package_dimensions": null,
+      "dimensions_unclassified": null,
+      "quantity": 3000,
+      "box_type": null,
+      "material_direction": null,
+      "paper_weight_gsm": null,
+      "lining": null,
+      "special_structure": null,
+      "print_method": null,
+      "print_sides": null,
+      "finishes": [
+        "霧膜",
+        "局部UV"
+      ],
+      "artwork_status": "已有AI設計檔",
+      "proofing_needed": null,
+      "requested_delivery_date": "2026-09-30",
+      "delivery_date_original": "2026 年 9 月 30 日",
+      "delivery_location": null,
+      "budget": null,
+      "preferences": [],
+      "notes": null,
+      "_system": {
+        "missing_fields": [
+          "包裝成品尺寸",
+          "盒型",
+          "紙材",
+          "紙張磅數",
+          "交貨地點"
+        ],
+        "ambiguous_fields": [],
+        "conflicts": [],
+        "evidence_by_field": {
+          "product_category": "彩盒",
+          "contents": "保養品",
+          "quantity": "3,000 個",
+          "product_dimensions": "5×5×12 公分",
+          "finishes": "霧膜、局部UV",
+          "artwork_status": "V，已經有 AI 設計檔",
+          "requested_delivery_date": "2026 年 9 月 30 日"
+        },
+        "status_by_field": {
+          "product_category": "AI抽取",
+          "contents": "AI抽取",
+          "quantity": "AI抽取",
+          "product_dimensions": "AI抽取",
+          "package_dimensions": "未提供",
+          "box_type": "未提供",
+          "material_direction": "未提供",
+          "paper_weight_gsm": "未提供",
+          "finishes": "AI抽取",
+          "artwork_status": "AI抽取",
+          "requested_delivery_date": "AI抽取",
+          "delivery_location": "未提供"
+        },
+        "risk_notes": [
+          "內容物尺寸不等於包裝成品尺寸，不可直接沿用"
+        ],
+        "manual_review_required": false,
+        "data_completeness": "7/12"
+      },
+      "_meta": {
+        "confirmed": true,
+        "parser_mode": "offline_rules",
+        "note": "Synthetic demo data — 非正式報價"
+      }
+    },
+    "followup": "您好，為利進一步評估，再請協助確認：包裝成品尺寸、盒型、紙材、紙張磅數、交貨地點。若材質尚未確定，也可提供預算與期望質感，由專員協助建議。"
+  },
+  {
+    "case": "案例 2：大量缺漏",
+    "input": "想做一批質感高級一點的中秋禮盒，數量還沒確定，希望不要太貴。",
+    "export": {
+      "source_channel": null,
+      "company": null,
+      "contact_name": null,
+      "contact_info": null,
+      "raw_request": "想做一批質感高級一點的中秋禮盒，數量還沒確定，希望不要太貴。",
+      "product_category": "禮盒",
+      "contents": null,
+      "purpose": null,
+      "product_dimensions": null,
+      "contents_weight_or_volume": null,
+      "storage_transport": null,
+      "package_dimensions": null,
+      "dimensions_unclassified": null,
+      "quantity": null,
+      "box_type": null,
+      "material_direction": null,
+      "paper_weight_gsm": null,
+      "lining": null,
+      "special_structure": null,
+      "print_method": null,
+      "print_sides": null,
+      "finishes": [],
+      "artwork_status": null,
+      "proofing_needed": null,
+      "requested_delivery_date": null,
+      "delivery_date_original": null,
+      "delivery_location": null,
+      "budget": null,
+      "preferences": [
+        "高級",
+        "質感",
+        "不要太貴"
+      ],
+      "notes": null,
+      "_system": {
+        "missing_fields": [
+          "內容物",
+          "數量",
+          "內容物尺寸",
+          "包裝成品尺寸",
+          "盒型",
+          "紙材",
+          "紙張磅數",
+          "表面加工",
+          "設計稿狀態",
+          "交期",
+          "交貨地點"
+        ],
+        "ambiguous_fields": [],
+        "conflicts": [],
+        "evidence_by_field": {
+          "product_category": "禮盒"
+        },
+        "status_by_field": {
+          "product_category": "AI抽取",
+          "contents": "未提供",
+          "quantity": "未提供",
+          "product_dimensions": "未提供",
+          "package_dimensions": "未提供",
+          "box_type": "未提供",
+          "material_direction": "未提供",
+          "paper_weight_gsm": "未提供",
+          "finishes": "未提供",
+          "artwork_status": "未提供",
+          "requested_delivery_date": "未提供",
+          "delivery_location": "未提供"
+        },
+        "risk_notes": [],
+        "manual_review_required": false,
+        "data_completeness": "1/12"
+      },
+      "_meta": {
+        "confirmed": true,
+        "parser_mode": "offline_rules",
+        "note": "Synthetic demo data — 非正式報價"
+      }
+    },
+    "followup": "您好，為利進一步評估，再請協助確認：內容物、數量、內容物尺寸、包裝成品尺寸、盒型、紙材。若材質尚未確定，也可提供預算與期望質感，由專員協助建議。"
+  },
+  {
+    "case": "案例 3：資訊矛盾",
+    "input": "第一批先做 2000 個，正式訂單數量應該是 3000 個，尺寸是 20×15×8 公分。",
+    "export": {
+      "source_channel": null,
+      "company": null,
+      "contact_name": null,
+      "contact_info": null,
+      "raw_request": "第一批先做 2000 個，正式訂單數量應該是 3000 個，尺寸是 20×15×8 公分。",
+      "product_category": null,
+      "contents": null,
+      "purpose": null,
+      "product_dimensions": null,
+      "contents_weight_or_volume": null,
+      "storage_transport": null,
+      "package_dimensions": null,
+      "dimensions_unclassified": {
+        "length_mm": 200.0,
+        "width_mm": 150.0,
+        "height_mm": 80.0,
+        "original_text": "20×15×8 公分"
+      },
+      "quantity": null,
+      "box_type": null,
+      "material_direction": null,
+      "paper_weight_gsm": null,
+      "lining": null,
+      "special_structure": null,
+      "print_method": null,
+      "print_sides": null,
+      "finishes": [],
+      "artwork_status": null,
+      "proofing_needed": null,
+      "requested_delivery_date": null,
+      "delivery_date_original": null,
+      "delivery_location": null,
+      "budget": null,
+      "preferences": [],
+      "notes": null,
+      "_system": {
+        "missing_fields": [
+          "產品類別",
+          "內容物",
+          "數量",
+          "內容物尺寸",
+          "包裝成品尺寸",
+          "盒型",
+          "紙材",
+          "紙張磅數",
+          "表面加工",
+          "設計稿狀態",
+          "交期",
+          "交貨地點"
+        ],
+        "ambiguous_fields": [
+          {
+            "field": "dimensions",
+            "reason": "無法判定是內容物尺寸還是包裝尺寸",
+            "evidence": "20×15×8 公分"
+          }
+        ],
+        "conflicts": [
+          {
+            "field": "quantity",
+            "values": [
+              "2000",
+              "3000"
+            ],
+            "evidence": "2000 個；3000 個"
+          }
+        ],
+        "evidence_by_field": {},
+        "status_by_field": {
+          "product_category": "未提供",
+          "contents": "未提供",
+          "quantity": "不確定",
+          "product_dimensions": "未提供",
+          "package_dimensions": "未提供",
+          "box_type": "未提供",
+          "material_direction": "未提供",
+          "paper_weight_gsm": "未提供",
+          "finishes": "未提供",
+          "artwork_status": "未提供",
+          "requested_delivery_date": "未提供",
+          "delivery_location": "未提供"
+        },
+        "risk_notes": [
+          "有一組尺寸無法判定歸屬，未填入任何尺寸欄位"
+        ],
+        "manual_review_required": false,
+        "data_completeness": "0/12"
+      },
+      "_meta": {
+        "confirmed": true,
+        "parser_mode": "offline_rules",
+        "note": "Synthetic demo data — 非正式報價"
+      }
+    },
+    "followup": "您好，為利進一步評估，再請協助確認：產品類別、內容物、數量、內容物尺寸、包裝成品尺寸、盒型。若材質尚未確定，也可提供預算與期望質感，由專員協助建議。"
+  },
+  {
+    "case": "案例 4：混合單位",
+    "input": "產品寬 50 mm、高 12 cm、深度大約 0.08 m，想做抽屜盒。",
+    "export": {
+      "source_channel": null,
+      "company": null,
+      "contact_name": null,
+      "contact_info": null,
+      "raw_request": "產品寬 50 mm、高 12 cm、深度大約 0.08 m，想做抽屜盒。",
+      "product_category": null,
+      "contents": null,
+      "purpose": null,
+      "product_dimensions": {
+        "length_mm": 80,
+        "width_mm": 50,
+        "height_mm": 120,
+        "original_text": "寬 50 mm、高 12 cm、深度大約 0.08 m"
+      },
+      "contents_weight_or_volume": null,
+      "storage_transport": null,
+      "package_dimensions": null,
+      "dimensions_unclassified": null,
+      "quantity": null,
+      "box_type": "抽屜盒",
+      "material_direction": null,
+      "paper_weight_gsm": null,
+      "lining": null,
+      "special_structure": null,
+      "print_method": null,
+      "print_sides": null,
+      "finishes": [],
+      "artwork_status": null,
+      "proofing_needed": null,
+      "requested_delivery_date": null,
+      "delivery_date_original": null,
+      "delivery_location": null,
+      "budget": null,
+      "preferences": [],
+      "notes": null,
+      "_system": {
+        "missing_fields": [
+          "產品類別",
+          "內容物",
+          "數量",
+          "包裝成品尺寸",
+          "紙材",
+          "紙張磅數",
+          "表面加工",
+          "設計稿狀態",
+          "交期",
+          "交貨地點"
+        ],
+        "ambiguous_fields": [
+          {
+            "field": "general",
+            "reason": "含約略語「大約」",
+            "evidence": "大約"
+          }
+        ],
+        "conflicts": [],
+        "evidence_by_field": {
+          "box_type": "抽屜盒",
+          "product_dimensions": "寬 50 mm、高 12 cm、深度大約 0.08 m"
+        },
+        "status_by_field": {
+          "product_category": "未提供",
+          "contents": "未提供",
+          "quantity": "未提供",
+          "product_dimensions": "AI抽取",
+          "package_dimensions": "未提供",
+          "box_type": "AI抽取",
+          "material_direction": "未提供",
+          "paper_weight_gsm": "未提供",
+          "finishes": "未提供",
+          "artwork_status": "未提供",
+          "requested_delivery_date": "未提供",
+          "delivery_location": "未提供"
+        },
+        "risk_notes": [
+          "內容物尺寸不等於包裝成品尺寸，不可直接沿用"
+        ],
+        "manual_review_required": false,
+        "data_completeness": "2/12"
+      },
+      "_meta": {
+        "confirmed": true,
+        "parser_mode": "offline_rules",
+        "note": "Synthetic demo data — 非正式報價"
+      }
+    },
+    "followup": "您好，為利進一步評估，再請協助確認：產品類別、內容物、數量、包裝成品尺寸、紙材、紙張磅數。若材質尚未確定，也可提供預算與期望質感，由專員協助建議。"
+  }
+]
