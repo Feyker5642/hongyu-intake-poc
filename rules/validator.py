@@ -169,6 +169,14 @@ def extract_quantities(text: str) -> list[tuple[int, str]]:
     # \b 只能掛英文量詞：中文字在 re 裡也算 \w，「個保」之間沒有邊界會使比對失敗
     out = [(int(m.group(1).replace(",", "")), m.group(0))
            for m in re.finditer(r"([\d,]+)\s*(個|組|盒|份|pcs\b|pieces\b|units?\b)", text, re.I)]
+    # 「2,000 或 4,000 盒」：前一個數字沒帶量詞，上面的樣式只會抓到後者，
+    # 引擎就把未決的選項當成了答案——2026-08-12 語料跑分抓到的真缺口。
+    # 兩個都收，讓既有的多值→conflict 路徑接手（防呆 5：不代選）。
+    for m in re.finditer(r"([\d,]+)\s*[或/]\s*([\d,]+)\s*(個|組|盒|份|pcs\b)", text, re.I):
+        for g in (1, 2):
+            v = int(m.group(g).replace(",", ""))
+            if not any(v == q for q, _ in out):
+                out.append((v, m.group(0)))
     # 中文數字：「三千個」「兩千五百盒」。量詞跟阿拉伯數字同一組。
     for m in re.finditer(r"([零一二兩三四五六七八九十百千萬]{1,6})\s*(個|組|盒|份)", text):
         v = cn_to_int(m.group(1))
@@ -206,7 +214,16 @@ def extract_location(text: str):
 
 
 def extract_date(text: str):
-    """完整且合法的年月日 → ISO；否則 None，原文一律保留（防呆 6）。"""
+    """完整且合法的年月日 → ISO；否則 None，原文一律保留（防呆 6）。
+
+    兩個完整日期以「或／還是／or」相連＝未決選項，不挑第一個當答案
+    （語料 050 抓到的缺口：whichever is feasible）。
+    """
+    full = list(re.finditer(r"\d{4}\s*[年/-]\s*\d{1,2}\s*[月/-]\s*\d{1,2}\s*日?", text))
+    if len(full) >= 2:
+        between = text[full[0].end():full[1].start()]
+        if re.search(r"或|還是|\bor\b", between):
+            return None, text[full[0].start():full[1].end()]
     m = re.search(r"(\d{4})\s*[年/-]\s*(\d{1,2})\s*[月/-]\s*(\d{1,2})\s*日?", text)
     if m:
         y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
@@ -319,6 +336,17 @@ def rules_parse(text: str) -> ParseResult:
             ev.pop(target, None)
 
     finish_hits = _find_aliases(text, FINISH_ALIASES)
+    # 「亮膜或霧膜哪個合適再決定」：被提及 ≠ 被選定。兩個加工詞之間有
+    # 「或／還是」且句中帶未決語，一律不填、標不確定（語料跑分抓到的缺口）。
+    undecided = re.search(
+        r"(霧膜|亮膜|消光|燙金|壓紋|開窗|局部\s*UV)\s*(?:或|還是)\s*(霧膜|亮膜|消光|燙金|壓紋|開窗|局部\s*UV)",
+        text)
+    if undecided and re.search(r"再決定|再說|未定|不確定|哪個|都可以|皆可", text):
+        dropped = {c for c, _ in _find_aliases(undecided.group(0), FINISH_ALIASES)}
+        finish_hits = [(c, w) for c, w in finish_hits if c not in dropped]
+        sysf.ambiguous_fields.append(Ambiguity(
+            field="finishes", reason="加工選項未決（或），不代選",
+            evidence=undecided.group(0)))
     for canon, _w in finish_hits:
         if canon not in req.finishes:
             req.finishes.append(canon)

@@ -37,6 +37,16 @@ CASES = [
      "打樣需求＋數量", lambda r: r.request.proofing_needed is not None),
     ("紙盒 30*20*10 公分 1000 個 白卡 300 磅 霧膜",
      "電報式全塞一行", lambda r: r.request.quantity == 1000 and r.request.paper_weight_gsm == 300),
+    # 「或」型未決選項——2026-08-12 語料跑分抓到的三個缺口，引擎不得代選
+    ("彩盒 2,000 或 4,000 盒，抽屜盒",
+     "數量或型→矛盾不代選", lambda r: r.request.quantity is None and
+     any(c.field == "quantity" for c in r.system.conflicts)),
+    ("三千盒彩盒，亮膜或霧膜哪個合適再決定",
+     "加工或型→不填標未決", lambda r: r.request.finishes == [] and
+     any(a.field == "finishes" for a in r.system.ambiguous_fields)),
+    ("800 個紙盒，交期 2026-09-30 或 2026-10-03 都可以",
+     "日期或型→不挑第一個", lambda r: r.request.requested_delivery_date is None and
+     r.request.delivery_date_original is not None),
 ]
 
 
