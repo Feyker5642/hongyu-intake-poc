@@ -101,15 +101,18 @@ def merge_with_rules(text: str, ext: LLMExtraction) -> ParseResult:
         if ev:
             sysf.evidence_by_field[attr] = ev
 
-    # 2) 其餘欄位：證據不在原文裡就清掉（LLM 捏造的欄位不進系統）
-    for attr in ("product_category", "contents", "purpose", "box_type",
-                 "material_direction", "artwork_status", "print_method",
-                 "print_sides", "lining", "special_structure", "delivery_location"):
+    # 2) 其餘每一個欄位都要驗：值本身必須出現在原文，否則清空。
+    #    白名單會漏（paper_weight_gsm、proofing_needed 就是這樣溜過去的），
+    #    所以改成掃過模型上的所有欄位，只跳過權威欄位與純記錄欄位。
+    skip = set(RULE_AUTHORITATIVE) | {"raw_request", "finishes", "notes"}
+    for attr in type(req).model_fields:
+        if attr in skip:
+            continue
         value = getattr(req, attr)
         if value in (None, "", []):
             continue
-        ev = sysf.evidence_by_field.get(attr, "")
-        if _squash(str(value)) not in haystack and _squash(ev) not in haystack:
+        # 數字要原樣出現在原文；字串要整串出現。無關的 evidence 不能替它背書。
+        if _squash(str(value)) not in haystack:
             setattr(req, attr, None)
             sysf.evidence_by_field.pop(attr, None)
     req.finishes = [f for f in req.finishes if _squash(f) in haystack]
@@ -124,7 +127,21 @@ def merge_with_rules(text: str, ext: LLMExtraction) -> ParseResult:
     return validate(ParseResult(request=req, system=sysf, parser_mode="openai"))
 
 
+def _load_dotenv() -> None:
+    """README 教人複製 .env，程式就得真的讀它——六行，不為此加依賴。"""
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip())
+
+
 def parse_request(text: str, force_offline: bool = False) -> ParseResult:
+    _load_dotenv()
     text = (text or "").strip()
     if not text:
         raise ValueError("輸入為空")

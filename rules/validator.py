@@ -179,15 +179,20 @@ def rules_parse(text: str) -> ParseResult:
             sysf.ambiguous_fields.append(Ambiguity(
                 field="dimensions", reason="無法判定是內容物尺寸還是包裝尺寸",
                 evidence=dims.original_text or ""))
-        if getattr(req, target) is None:
+        existing = getattr(req, target)
+        if existing is None and not any(c.field == target for c in sysf.conflicts):
             setattr(req, target, dims)
             if target != "dimensions_unclassified":
                 ev[target] = dims.original_text or ""
-        else:  # 同一類出現第二組——不覆蓋，標為衝突
-            sysf.conflicts.append(Conflict(
-                field=target, values=[getattr(req, target).original_text or "",
-                                      dims.original_text or ""],
-                evidence=dims.original_text or ""))
+        else:  # 同一類出現第二組——清空該欄並記衝突，絕不代為選第一組
+            prior = [c for c in sysf.conflicts if c.field == target]
+            values = prior[0].values if prior else [existing.original_text or ""]
+            values = values + [dims.original_text or ""]
+            sysf.conflicts = [c for c in sysf.conflicts if c.field != target]
+            sysf.conflicts.append(Conflict(field=target, values=values,
+                                           evidence="；".join(values)))
+            setattr(req, target, None)
+            ev.pop(target, None)
 
     for f in FINISH_HINTS:
         norm = f.replace("局部 UV", "局部UV")

@@ -52,6 +52,27 @@ def test_confirm_then_edit_revokes_confirmation():
     assert "quantity" in at.session_state["edited"]
 
 
+def test_missing_numbers_render_blank_not_zero():
+    """Gate P0-3：缺漏的數字在畫面必須是空白，不能顯示 0 而匯出 null。"""
+    at = boot()
+    at.button(key="case_sparse").click().run()
+    [b for b in at.button if b.label == "解析需求"][0].click().run()
+    assert at.session_state["result"].request.quantity is None
+    assert at.number_input(key="w_quantity").value is None, "未提供不得顯示為 0"
+    assert at.number_input(key="w_product_dimensions_length_mm").value is None
+
+
+def test_illegal_date_is_cleared_from_the_widget():
+    """Gate P0-4：非法日期被驗證清掉後，畫面不得繼續顯示它。"""
+    at = boot()
+    at.button(key="case_complete").click().run()
+    [b for b in at.button if b.label == "解析需求"][0].click().run()
+    at.text_input(key="w_requested_delivery_date").set_value("2026-02-31").run()
+    assert at.session_state["result"].request.requested_delivery_date is None
+    assert at.text_input(key="w_requested_delivery_date").value == "", \
+        "畫面確認值必須跟匯出值是同一份"
+
+
 def test_edit_raw_text_invalidates_parse():
     """改原文之後不得用舊解析結果匯出。"""
     at = boot()

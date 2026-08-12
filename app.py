@@ -12,7 +12,7 @@ import pathlib
 
 import streamlit as st
 
-from rules.validator import build_export, build_followup_message, validate
+from rules.validator import build_export, build_followup_message, normalize_iso, validate
 from schemas.packaging_request import Dimensions, ParseResult
 from services.llm_parser import parse_request
 
@@ -43,9 +43,18 @@ def on_text_change():
 
 
 def on_field_change(field: str):
-    """改任何欄位 → 撤銷確認，該欄標為已確認並清掉它的舊矛盾與依據。"""
+    """改任何欄位 → 撤銷確認，該欄標為已確認並清掉它的舊矛盾與依據。
+
+    非法日期在這裡就清掉：回呼跑在重繪之前，是唯一能改 widget 狀態的時機，
+    也才能保證畫面上確認的值跟匯出的值是同一份。
+    """
     st.session_state.confirmed = False
     st.session_state.edited = set(st.session_state.edited) | {field}
+    if field == "requested_delivery_date":
+        raw = st.session_state.get("w_requested_delivery_date") or ""
+        if raw and not normalize_iso(raw):
+            st.session_state["w_requested_delivery_date"] = ""
+            st.session_state["date_rejected"] = raw
 
 
 def load_case(text: str):
@@ -121,13 +130,13 @@ def dims_editor(label, field, dims: Dimensions | None) -> Dimensions | None:
     vals = []
     for i, (name, attr) in enumerate([("長", "length_mm"), ("寬", "width_mm"), ("高", "height_mm")]):
         cur = getattr(dims, attr, None) if dims else None
-        vals.append(c[i].number_input(f"{name} (mm)", min_value=0.0, step=1.0,
-                                      value=float(cur) if cur is not None else 0.0,
-                                      key=f"w_{field}_{attr}",
-                                      on_change=on_field_change, args=(field,)))
+        vals.append(c[i].number_input(
+            f"{name} (mm)", min_value=0.0, step=1.0,
+            value=float(cur) if cur is not None else None, placeholder="未提供",
+            key=f"w_{field}_{attr}", on_change=on_field_change, args=(field,)))
     if dims and dims.original_text:
         st.caption(f"原文（唯讀）：「{dims.original_text}」")
-    if not any(vals):
+    if not any(v for v in vals if v):
         return None
     return Dimensions(length_mm=vals[0] or None, width_mm=vals[1] or None,
                       height_mm=vals[2] or None,
@@ -142,10 +151,12 @@ with c1:
     req.contents = text_field("內容物", "contents", req.contents)
     a, b = st.columns([3, 1])
     with a:
-        q = st.number_input("數量", min_value=0, step=100, value=req.quantity or 0,
-                            key="w_quantity", on_change=on_field_change, args=("quantity",))
+        # value=None 讓「未提供」在畫面上就是空白，不是 0——畫面必須跟匯出一致
+        q = st.number_input("數量", min_value=0, step=100, value=req.quantity,
+                            placeholder="未提供", key="w_quantity",
+                            on_change=on_field_change, args=("quantity",))
     meta(b, "quantity")
-    req.quantity = q or None
+    req.quantity = int(q) if q else None
     req.product_dimensions = dims_editor("內容物尺寸", "product_dimensions", req.product_dimensions)
     req.package_dimensions = dims_editor("包裝成品尺寸", "package_dimensions", req.package_dimensions)
     if req.dimensions_unclassified:
@@ -173,6 +184,10 @@ with c2:
 
 if req.preferences:
     st.info("**客戶偏好（不轉成材料或預算）**：" + "、".join(req.preferences))
+
+if st.session_state.pop("date_rejected", None):
+    st.error("交期不是合法的 ISO 日期（例如 2026-02-31 並不存在），已清空。"
+             "原文仍保留在下方。", icon="🚫")
 
 st.session_state.result = validate(result, confirmed_fields=set(st.session_state.edited))
 

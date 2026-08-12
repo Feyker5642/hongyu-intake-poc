@@ -82,6 +82,36 @@ def test_llm_cannot_override_rule_authoritative_fields():
     assert r.request.material_direction is None, "證據不存在於原文的欄位必須清空"
 
 
+# ── Gate 第二輪：P0-1 修不完整、P0-2 仍 first-wins ─────────────────
+def test_llm_fields_outside_whitelist_also_verified():
+    """paper_weight_gsm / proofing_needed 曾經完全沒被驗證就進系統。"""
+    text = "想做一批質感高級一點的中秋禮盒，數量還沒確定。"
+    ext = LLMExtraction(paper_weight_gsm=350, proofing_needed="是",
+                        contents_weight_or_volume="500ml", storage_transport="冷藏")
+    r = merge_with_rules(text, ext)
+    assert r.request.paper_weight_gsm is None
+    assert r.request.proofing_needed is None
+    assert r.request.contents_weight_or_volume is None
+    assert r.request.storage_transport is None
+
+
+def test_unrelated_evidence_cannot_vouch_for_invented_value():
+    """『白卡』不在原文，卻用原文裡的『質感高級』當依據——不得放行。"""
+    text = "想做一批質感高級一點的中秋禮盒。"
+    ext = LLMExtraction(material_direction="白卡", evidence={"material_direction": "質感高級"})
+    r = merge_with_rules(text, ext)
+    assert r.request.material_direction is None
+
+
+def test_same_kind_second_dimension_clears_field():
+    """兩組都是內容物尺寸：標 conflict 之後不得留下第一組。"""
+    r = rules_parse("產品尺寸 5×5×12 cm，產品尺寸 6×6×13 cm")
+    assert r.request.product_dimensions is None, "畫面宣稱不代選，就不能留第一組"
+    c = [c for c in r.system.conflicts if c.field == "product_dimensions"]
+    assert len(c) == 1 and len(c[0].values) == 2
+    assert "product_dimensions" not in r.system.evidence_by_field
+
+
 def test_llm_inherits_all_rule_conflicts():
     text = "第一批先做 2000 個，正式訂單應該是 3000 個，白卡或牛皮都可以"
     ext = LLMExtraction(quantity=3000, material_direction="白卡",
