@@ -11,7 +11,16 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from rules.validator import RULE_AUTHORITATIVE, rules_parse, validate
+from rules.validator import (
+    BOX_TYPE_ALIASES,
+    CATEGORY_ALIASES,
+    FINISH_ALIASES,
+    MATERIAL_HINTS,
+    RULE_AUTHORITATIVE,
+    _find_aliases,
+    rules_parse,
+    validate,
+)
 from schemas.packaging_request import PackagingRequest, ParseResult, SystemFields
 
 SYSTEM_PROMPT = """你是包裝詢價結構化引擎。從客戶文字抽取欄位，規則：
@@ -29,6 +38,14 @@ class LLMDimensions(BaseModel):
     width_mm: Optional[float] = None
     height_mm: Optional[float] = None
     original_text: Optional[str] = None
+
+
+class LLMEvidence(BaseModel):
+    """OpenAI 嚴格 Schema 不接受任意鍵的 dict（2026-08-12 實測 400），
+    所以證據用型別化清單，合併層再轉回 dict。"""
+
+    field: str
+    quote: str
 
 
 class LLMExtraction(BaseModel):
@@ -56,7 +73,7 @@ class LLMExtraction(BaseModel):
     delivery_location: Optional[str] = None
     budget: Optional[str] = None
     preferences: list[str] = Field(default_factory=list)
-    evidence: dict[str, str] = Field(default_factory=dict)
+    evidence: list[LLMEvidence] = Field(default_factory=list)
 
 
 # DeepSeek 只支援 json_object 模式（json_schema 會回 unavailable），
@@ -68,7 +85,7 @@ DEEPSEEK_JSON_INSTRUCTION = (
     '"package_dimensions":{"length_mm":200,"width_mm":150,"height_mm":80,'
     '"original_text":"20×15×8 公分"},"finishes":["霧膜"],'
     '"requested_delivery_date":"2026-09-30",'
-    '"evidence":{"quantity":"3,000 個","finishes":"霧膜"}}。'
+    '"evidence":[{"field":"quantity","quote":"3,000 個"},{"field":"finishes","quote":"霧膜"}]}。'
     "原文沒提到的欄位一律省略或填 null。"
 )
 
@@ -135,7 +152,7 @@ def merge_with_rules(text: str, ext: LLMExtraction) -> ParseResult:
     """
     baseline = rules_parse(text)
     req = PackagingRequest(raw_request=text, **ext.model_dump(exclude={"evidence"}))
-    sysf = SystemFields(evidence_by_field=dict(ext.evidence or {}))
+    sysf = SystemFields(evidence_by_field={e.field: e.quote for e in ext.evidence})
     haystack = _squash(text)
 
     # 1) 權威欄位整批以規則層覆蓋，LLM 對這些欄位沒有發言權
@@ -162,7 +179,40 @@ def merge_with_rules(text: str, ext: LLMExtraction) -> ParseResult:
             sysf.evidence_by_field.pop(attr, None)
     req.finishes = [f for f in req.finishes if _squash(f) in haystack]
 
-    # 3) 規則層找到的所有矛盾一律繼承，並清空對應欄位
+    # 3) 正規化成分類字典的正式值——真模型實測（2026-08-12）抓到的三種病：
+    #    盒型填成「彩盒」（類別錯位）、紙材照抄整句「紙材還不確定，先協助評估」、
+    #    加工回「消光」「局部 UV」（非正式值，會讓 UI 多選元件崩潰）。
+    def canon_of(value, aliases):
+        hits = _find_aliases(value or "", aliases)
+        return hits[0][0] if len(hits) == 1 else None
+
+    if req.product_category:
+        req.product_category = canon_of(req.product_category, CATEGORY_ALIASES)
+    if req.box_type:
+        mapped = canon_of(req.box_type, BOX_TYPE_ALIASES)
+        # 值其實是產品類別（如「彩盒」）→ 這欄清掉，別占著盒型
+        req.box_type = None if canon_of(req.box_type, CATEGORY_ALIASES) else mapped
+    if req.material_direction:
+        hint = next((h for h in MATERIAL_HINTS if h in req.material_direction), None)
+        unsure = any(w in req.material_direction for w in ("不確定", "未定", "評估"))
+        req.material_direction = None if unsure else hint
+    req.finishes = sorted({c for f in req.finishes for c, _ in _find_aliases(f, FINISH_ALIASES)})
+
+    # 4) 模型漏掉但規則層抓到的敘述性欄位，回填（值與證據一起帶回）
+    for attr in ("product_category", "contents", "box_type", "material_direction",
+                 "artwork_status", "delivery_location", "paper_weight_gsm",
+                 "proofing_needed"):
+        if getattr(req, attr) in (None, "", []) and getattr(baseline.request, attr) not in (None, "", []):
+            setattr(req, attr, getattr(baseline.request, attr))
+            ev = baseline.system.evidence_by_field.get(attr)
+            if ev:
+                sysf.evidence_by_field[attr] = ev
+    if not req.finishes and baseline.request.finishes:
+        req.finishes = list(baseline.request.finishes)
+        if baseline.system.evidence_by_field.get("finishes"):
+            sysf.evidence_by_field["finishes"] = baseline.system.evidence_by_field["finishes"]
+
+    # 5) 規則層找到的所有矛盾一律繼承，並清空對應欄位
     sysf.conflicts = list(baseline.system.conflicts)
     sysf.ambiguous_fields = list(baseline.system.ambiguous_fields)
     for c in sysf.conflicts:
@@ -191,6 +241,9 @@ def parse_request(text: str, force_offline: bool = False) -> ParseResult:
     if not text:
         raise ValueError("輸入為空")
     provider = active_provider()
+    # 測試防護：.env 存在時 pytest 也會拿到金鑰，靜默打真 API（45 秒學到的）
+    if os.environ.get("HONGYU_FORCE_OFFLINE"):
+        force_offline = True
     if force_offline or provider is None:
         result = rules_parse(text)
         result.parser_note = "離線規則解析（未使用 LLM）"

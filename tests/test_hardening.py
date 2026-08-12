@@ -7,6 +7,7 @@ import pytest
 from rules.validator import normalize_iso, rules_parse, validate
 from services.llm_parser import (
     LLMDimensions,
+    LLMEvidence,
     LLMExtraction,
     active_provider,
     merge_with_rules,
@@ -16,8 +17,9 @@ from services.llm_parser import (
 
 # ── DeepSeek json_object 路徑：字串進、驗證出，壞的必須炸 ─────────────
 def test_deepseek_json_content_parses():
-    ext = parse_extraction_json('{"product_category": "彩盒", "quantity": 3000, "evidence": {"quantity": "3000 個"}}')
+    ext = parse_extraction_json('{"product_category": "彩盒", "quantity": 3000, "evidence": [{"field": "quantity", "quote": "3000 個"}]}')
     assert ext.product_category == "彩盒" and ext.quantity == 3000
+    assert ext.evidence[0].field == "quantity"
 
 
 def test_deepseek_empty_content_raises():
@@ -103,7 +105,7 @@ def test_llm_cannot_override_rule_authoritative_fields():
         requested_delivery_date="明天",
         budget="每個 100 元成交",
         material_direction="白卡",  # 原文沒有
-        evidence={"material_direction": "客戶說要白卡"},  # 捏造的依據
+        evidence=[LLMEvidence(field="material_direction", quote="客戶說要白卡")],  # 捏造的依據
     )
     r = merge_with_rules(text, ext)
     assert r.request.quantity is None, "原文沒有數量，LLM 不得補值"
@@ -130,7 +132,8 @@ def test_llm_fields_outside_whitelist_also_verified():
 def test_unrelated_evidence_cannot_vouch_for_invented_value():
     """『白卡』不在原文，卻用原文裡的『質感高級』當依據——不得放行。"""
     text = "想做一批質感高級一點的中秋禮盒。"
-    ext = LLMExtraction(material_direction="白卡", evidence={"material_direction": "質感高級"})
+    ext = LLMExtraction(material_direction="白卡",
+                        evidence=[LLMEvidence(field="material_direction", quote="質感高級")])
     r = merge_with_rules(text, ext)
     assert r.request.material_direction is None
 
@@ -147,7 +150,8 @@ def test_same_kind_second_dimension_clears_field():
 def test_llm_inherits_all_rule_conflicts():
     text = "第一批先做 2000 個，正式訂單應該是 3000 個，白卡或牛皮都可以"
     ext = LLMExtraction(quantity=3000, material_direction="白卡",
-                        evidence={"quantity": "3000 個", "material_direction": "白卡"})
+                        evidence=[LLMEvidence(field="quantity", quote="3000 個"),
+                                  LLMEvidence(field="material_direction", quote="白卡")])
     r = merge_with_rules(text, ext)
     fields = {c.field for c in r.system.conflicts}
     assert {"quantity", "material_direction"} <= fields

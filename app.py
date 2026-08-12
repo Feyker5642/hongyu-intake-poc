@@ -221,7 +221,9 @@ with c2:
     req.material_direction = text_field("紙材", "material_direction", req.material_direction)
     a, b = st.columns([3, 1])
     with a:
-        req.finishes = st.multiselect("表面加工", TAXONOMY["finishes"], default=req.finishes,
+        # default 含字典外的值會讓 multiselect 直接拋例外——過濾是保命符
+        safe_defaults = [f for f in req.finishes if f in TAXONOMY["finishes"]]
+        req.finishes = st.multiselect("表面加工", TAXONOMY["finishes"], default=safe_defaults,
                                       key="w_finishes", on_change=on_field_change,
                                       args=("finishes",))
     meta(b, "finishes")
