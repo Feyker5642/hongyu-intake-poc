@@ -66,7 +66,7 @@ def section(n: int, title: str):
                 f'<div class="t">{title}</div></div>', unsafe_allow_html=True)
 
 for key, default in [("result", None), ("confirmed", False),
-                     ("text", ""), ("edited", set())]:
+                     ("text", ""), ("edited", set()), ("parse_error", None)]:
     st.session_state.setdefault(key, default)
 
 
@@ -115,27 +115,51 @@ for col, case in zip(cols, DEMO["cases"]):
 st.text_area(f"模擬從「{src}」收到的內容（合成資料）", height=140,
              key="text", on_change=on_text_change)
 
-left, right = st.columns([1, 3])
-if left.button("解析需求", type="primary", use_container_width=True):
+left, mid, right = st.columns([1, 1, 2])
+
+
+def run_parse(force_offline: bool):
     if not st.session_state.text.strip():
-        st.error("請先貼上或載入一段需求文字。")
-    else:
-        st.session_state.result = parse_request(st.session_state.text)
-        st.session_state.result.request.source_channel = src
-        st.session_state.confirmed = False
-        st.session_state.edited = set()
+        st.session_state.parse_error = "請先貼上或載入一段需求文字。"
+        return
+    st.session_state.parse_error = None
+    st.session_state.result = parse_request(st.session_state.text, force_offline=force_offline)
+    st.session_state.result.request.source_channel = st.session_state.w_source_channel
+    st.session_state.confirmed = False
+    st.session_state.edited = set()
+
+
+left.button("解析需求", type="primary", use_container_width=True,
+            on_click=run_parse, args=(False,))
+# 同一段文字強制走規則層——把 LLM 到底貢獻了什麼變成看得見的差異
+mid.button("只用規則解析（對照）", use_container_width=True,
+           on_click=run_parse, args=(True,),
+           help="關掉 LLM，同一段文字只用程式規則跑一次，兩者一比就知道模型讀懂了什麼")
+if st.session_state.get("parse_error"):
+    st.error(st.session_state.parse_error)
 
 result: ParseResult | None = st.session_state.result
 if result is None:
     st.info("載入上方任一合成案例，或貼上文字後按「解析需求」。")
     st.stop()
 
-if result.parser_mode == "deepseek":
-    right.success("解析模式：DeepSeek（JSON 模式；數字、尺寸、日期仍以規則層為準）")
-elif result.parser_mode == "openai":
-    right.success("解析模式：OpenAI Structured Outputs（數字、尺寸、日期仍以規則層為準）")
-else:
-    right.info(f"已切換離線 Demo 模式：{result.parser_note or '離線規則解析'}", icon="🔌")
+# 解析引擎必須一眼可辨：耗時是最誠實的訊號——LLM 以秒計，規則層以毫秒計
+ENGINE = {
+    "openai": ("🤖", "OpenAI", "#E6F1FB", "#185FA5", "#B5D4F4"),
+    "deepseek": ("🤖", "DeepSeek", "#EEEDFE", "#534AB7", "#CECBF6"),
+    "offline_rules": ("⚙️", "離線規則引擎（未用 LLM）", "#F1EFE8", "#5F5E5A", "#D3D1C7"),
+}
+icon, name, bg, fg, bd = ENGINE.get(result.parser_mode, ENGINE["offline_rules"])
+detail = f"　模型 {result.model_name}" if result.model_name else ""
+took = f"　耗時 {result.elapsed_ms} ms" if result.elapsed_ms is not None else ""
+st.markdown(
+    f'<div style="background:{bg};color:{fg};border:1px solid {bd};border-radius:8px;'
+    f'padding:10px 16px;margin:.4rem 0 .2rem;font-size:.92rem;">'
+    f'{icon} <b>本次由：{name}</b>{detail}{took}</div>', unsafe_allow_html=True)
+if result.parser_note:
+    st.caption(result.parser_note)
+if result.parser_mode != "offline_rules":
+    st.caption("模型只負責讀懂文字；數量、尺寸、日期、金額仍由程式規則層複核與否決。")
 
 # ── 第二區：AI 結構化結果 ──────────────────────────────────────────
 section(2, "AI 結構化結果（可修改）")

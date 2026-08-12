@@ -35,6 +35,22 @@ def test_second_case_replaces_first():
     assert "保養品" not in at.text_area[0].value
 
 
+def test_engine_banner_names_the_engine():
+    """使用者必須一眼看出結果是誰做的（2026-08-12 Feyker 回報分不出來）。"""
+    at = boot()
+    at.button(key="case_complete").click().run()
+    [b for b in at.button if b.label == "解析需求"][0].click().run()
+    r = at.session_state["result"]
+    assert r.elapsed_ms is not None, "耗時是辨識引擎最誠實的訊號，不能沒有"
+    assert r.parser_mode == "offline_rules"  # 測試環境強制離線
+    assert any("離線規則引擎" in str(m.value) for m in at.markdown), "橫幅必須指名引擎"
+
+
+def test_rules_only_button_exists():
+    at = boot()
+    assert any("只用規則解析" in b.label for b in at.button), "要能同段文字對照 LLM 與規則"
+
+
 def test_confirm_then_edit_revokes_confirmation():
     """P0-5：確認後改任何欄位，確認必須被撤銷、匯出必須重新鎖上。"""
     at = boot()

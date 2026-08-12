@@ -85,5 +85,7 @@ class SystemFields(BaseModel):
 class ParseResult(BaseModel):
     request: PackagingRequest
     system: SystemFields
-    parser_mode: str = "offline_rules"  # offline_rules | openai
+    parser_mode: str = "offline_rules"  # offline_rules | openai | deepseek
     parser_note: Optional[str] = None
+    model_name: Optional[str] = None
+    elapsed_ms: Optional[int] = None  # 耗時本身就是最誠實的辨識訊號

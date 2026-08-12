@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import re
+import time
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -97,6 +98,12 @@ def active_provider() -> str | None:
     if os.environ.get("OPENAI_API_KEY"):
         return "openai"
     return None
+
+
+def model_for(provider: str) -> str:
+    if provider == "deepseek":
+        return os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+    return os.environ.get("OPENAI_MODEL", "(未設定)")
 
 
 def parse_extraction_json(content: str) -> LLMExtraction:
@@ -244,15 +251,24 @@ def parse_request(text: str, force_offline: bool = False) -> ParseResult:
     # 測試防護：.env 存在時 pytest 也會拿到金鑰，靜默打真 API（45 秒學到的）
     if os.environ.get("HONGYU_FORCE_OFFLINE"):
         force_offline = True
+
+    started = time.perf_counter()
+
+    def stamp(result: ParseResult, model: str | None = None) -> ParseResult:
+        result.elapsed_ms = int((time.perf_counter() - started) * 1000)
+        result.model_name = model
+        return result
+
     if force_offline or provider is None:
         result = rules_parse(text)
-        result.parser_note = "離線規則解析（未使用 LLM）"
-        return result
+        result.parser_note = ("依要求強制離線比較" if force_offline and provider
+                              else "離線規則解析（未設定任何 LLM 金鑰）")
+        return stamp(result)
     try:
         result = _llm_parse(text, provider)
         result.parser_mode = provider
-        return result
+        return stamp(result, model_for(provider))
     except Exception as exc:  # API 失敗必須可理解、可展示（ACCEPTANCE P0）
         result = rules_parse(text)
         result.parser_note = f"{provider} 不可用（{type(exc).__name__}），已改用離線規則解析"
-        return result
+        return stamp(result)
