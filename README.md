@@ -1,5 +1,7 @@
 # 宏宇工藝 AI 詢價轉單助手（Concept Demo）
 
+**線上試用：<https://hongyu-intake-poc.streamlit.app/>**
+
 把非結構的包裝詢價文字轉成結構化、可編輯、可驗證的欄位，標出缺漏與矛盾，
 人工確認後匯出 JSON。定位是 **ERP 前面的詢價整理層**，不是報價系統。
 

@@ -35,6 +35,12 @@ Pages 放不了。兩者路線不同，不是設定問題。
 若之後要展示 LLM 路徑，在 Streamlit 的 App settings → Secrets 貼上
 `OPENAI_API_KEY`，不要進 Git。
 
+## 現況
+
+- Repo：<https://github.com/Feyker5642/hongyu-intake-poc>（public、`main`）
+- App：<https://hongyu-intake-poc.streamlit.app/>（2026-08-12 上線）
+- Secrets：**未設定**，刻意的——離線規則引擎不需要金鑰
+
 ## 上線步驟
 
 1. `gh repo create Feyker5642/hongyu-intake-poc --source=. --push`（可視性見下）
