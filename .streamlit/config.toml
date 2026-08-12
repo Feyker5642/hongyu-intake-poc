@@ -1,0 +1,12 @@
+[theme]
+base = "light"
+primaryColor = "#1D9E75"
+font = "sans serif"
+
+[server]
+# 雲端與本機一致：不收集使用統計、不自動開瀏覽器
+headless = true
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false

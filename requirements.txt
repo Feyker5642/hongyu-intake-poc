@@ -2,3 +2,5 @@ streamlit>=1.40
 pydantic>=2.9
 openai>=1.60
 pytest>=8.0
+# 雲端不指定 Python 版本，用 Community Cloud 預設 3.12。
+# 本專案語法需求為 3.10+（PEP 604 union、內建泛型），已確認相容。
