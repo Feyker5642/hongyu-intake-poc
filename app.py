@@ -130,10 +130,12 @@ if result is None:
     st.info("載入上方任一合成案例，或貼上文字後按「解析需求」。")
     st.stop()
 
-if result.parser_mode != "openai":
-    right.info(f"已切換離線 Demo 模式：{result.parser_note or '離線規則解析'}", icon="🔌")
-else:
+if result.parser_mode == "deepseek":
+    right.success("解析模式：DeepSeek（JSON 模式；數字、尺寸、日期仍以規則層為準）")
+elif result.parser_mode == "openai":
     right.success("解析模式：OpenAI Structured Outputs（數字、尺寸、日期仍以規則層為準）")
+else:
+    right.info(f"已切換離線 Demo 模式：{result.parser_note or '離線規則解析'}", icon="🔌")
 
 # ── 第二區：AI 結構化結果 ──────────────────────────────────────────
 section(2, "AI 結構化結果（可修改）")

@@ -5,7 +5,39 @@
 import pytest
 
 from rules.validator import normalize_iso, rules_parse, validate
-from services.llm_parser import LLMExtraction, LLMDimensions, merge_with_rules
+from services.llm_parser import (
+    LLMDimensions,
+    LLMExtraction,
+    active_provider,
+    merge_with_rules,
+    parse_extraction_json,
+)
+
+
+# ── DeepSeek json_object 路徑：字串進、驗證出，壞的必須炸 ─────────────
+def test_deepseek_json_content_parses():
+    ext = parse_extraction_json('{"product_category": "彩盒", "quantity": 3000, "evidence": {"quantity": "3000 個"}}')
+    assert ext.product_category == "彩盒" and ext.quantity == 3000
+
+
+def test_deepseek_empty_content_raises():
+    with pytest.raises(ValueError):
+        parse_extraction_json("")  # 官方文件明言可能回空——必須當失敗退離線
+
+
+def test_deepseek_invalid_json_raises():
+    with pytest.raises(Exception):
+        parse_extraction_json("好的，以下是 JSON：{...}")  # 模型多嘴不算合法輸出
+
+
+def test_provider_priority(monkeypatch):
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    assert active_provider() is None
+    monkeypatch.setenv("OPENAI_API_KEY", "x")
+    assert active_provider() == "openai"
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "y")
+    assert active_provider() == "deepseek", "兩把都在時 DeepSeek 優先（Feyker 指定）"
 
 
 # ── P0-2：多組尺寸不得靜默丟棄 ────────────────────────────────────

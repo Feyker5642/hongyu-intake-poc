@@ -59,8 +59,54 @@ class LLMExtraction(BaseModel):
     evidence: dict[str, str] = Field(default_factory=dict)
 
 
-def _openai_parse(text: str) -> ParseResult:
+# DeepSeek 只支援 json_object 模式（json_schema 會回 unavailable），
+# 所以提示裡必須含「json」字樣＋輸出範例，回來的字串再用 pydantic 驗。
+# 官方文件明言兩個坑：可能回空內容（當失敗處理、退離線）、要設 max_tokens 防截斷。
+DEEPSEEK_JSON_INSTRUCTION = (
+    "請以單一 JSON 物件回覆，不要輸出任何 JSON 以外的文字。鍵名與型別範例："
+    '{"product_category":"彩盒","contents":"保養品","quantity":3000,'
+    '"package_dimensions":{"length_mm":200,"width_mm":150,"height_mm":80,'
+    '"original_text":"20×15×8 公分"},"finishes":["霧膜"],'
+    '"requested_delivery_date":"2026-09-30",'
+    '"evidence":{"quantity":"3,000 個","finishes":"霧膜"}}。'
+    "原文沒提到的欄位一律省略或填 null。"
+)
+
+
+def active_provider() -> str | None:
+    """有 DeepSeek 金鑰優先走 DeepSeek（Feyker 2026-08-12 指定），否則 OpenAI。"""
+    if os.environ.get("DEEPSEEK_API_KEY"):
+        return "deepseek"
+    if os.environ.get("OPENAI_API_KEY"):
+        return "openai"
+    return None
+
+
+def parse_extraction_json(content: str) -> LLMExtraction:
+    """json_object 模式回來的是字串；空的或壞的 JSON 都要在這裡炸掉，不能靜默。"""
+    if not content or not content.strip():
+        raise ValueError("模型回傳空內容")
+    return LLMExtraction.model_validate_json(content)
+
+
+def _llm_parse(text: str, provider: str) -> ParseResult:
     from openai import OpenAI
+
+    if provider == "deepseek":
+        client = OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"],
+                        base_url="https://api.deepseek.com")
+        model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT + "\n" + DEEPSEEK_JSON_INSTRUCTION},
+                {"role": "user", "content": text},
+            ],
+            response_format={"type": "json_object"},
+            max_tokens=2000,
+        )
+        ext = parse_extraction_json(resp.choices[0].message.content)
+        return merge_with_rules(text, ext)
 
     model = os.environ.get("OPENAI_MODEL")
     if not model:
@@ -74,8 +120,7 @@ def _openai_parse(text: str) -> ParseResult:
         ],
         response_format=LLMExtraction,
     )
-    ext = completion.choices[0].message.parsed
-    return merge_with_rules(text, ext)
+    return merge_with_rules(text, completion.choices[0].message.parsed)
 
 
 def _squash(s: str) -> str:
@@ -145,13 +190,16 @@ def parse_request(text: str, force_offline: bool = False) -> ParseResult:
     text = (text or "").strip()
     if not text:
         raise ValueError("輸入為空")
-    if force_offline or not os.environ.get("OPENAI_API_KEY"):
+    provider = active_provider()
+    if force_offline or provider is None:
         result = rules_parse(text)
         result.parser_note = "離線規則解析（未使用 LLM）"
         return result
     try:
-        return _openai_parse(text)
+        result = _llm_parse(text, provider)
+        result.parser_mode = provider
+        return result
     except Exception as exc:  # API 失敗必須可理解、可展示（ACCEPTANCE P0）
         result = rules_parse(text)
-        result.parser_note = f"API 不可用（{type(exc).__name__}），已改用離線規則解析"
+        result.parser_note = f"{provider} 不可用（{type(exc).__name__}），已改用離線規則解析"
         return result
