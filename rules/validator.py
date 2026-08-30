@@ -83,6 +83,14 @@ CATEGORY_ALIASES = {
 }
 MATERIAL_HINTS = ["白卡", "灰銅", "白銅", "牛皮", "裱浪", "灰板"]
 PREFERENCE_HINTS = ["高級", "質感", "不要太貴", "環保", "便宜", "精緻"]
+# Artwork states are mutually exclusive: mentioning two states is a conflict,
+# never a first-match selection.
+ARTWORK_STATUS_ALIASES = {
+    "尚未設計": ["尚未設計", "還沒設計"],
+    "有參考圖": ["有參考圖", "參考圖"],
+    "有PDF": ["有PDF", "只有 PDF", "只有PDF", "PDF 檔", "PDF檔"],
+    "已有AI設計檔": ["已有AI設計檔", "AI設計檔", "AI 設計檔", "AI 檔", "AI檔"],
+}
 AMBIG_MARKERS = ["大約", "左右", "上下", "約"]
 
 PRODUCT_CTX = re.compile(r"(產品|內容物|商品|本身)")
@@ -353,12 +361,8 @@ def rules_parse(text: str) -> ParseResult:
     if req.finishes:
         ev["finishes"] = "、".join(w for _, w in finish_hits)
 
-    if re.search(r"(AI|ai)\s*(設計)?檔", text):
-        req.artwork_status = "已有AI設計檔"
-        ev["artwork_status"] = re.search(r".{0,6}(AI|ai)\s*(設計)?檔", text).group(0)
-    elif re.search(r"(還沒|尚未)設計", text):
-        req.artwork_status = "尚未設計"
-        ev["artwork_status"] = "尚未設計"
+    _pick_or_conflict(
+        text, ARTWORK_STATUS_ALIASES, "artwork_status", req, sysf, "artwork_status")
 
     iso, original = extract_date(text)
     req.requested_delivery_date = iso
