@@ -91,6 +91,15 @@ ARTWORK_STATUS_ALIASES = {
     "有PDF": ["有PDF", "只有 PDF", "只有PDF", "PDF 檔", "PDF檔"],
     "已有AI設計檔": ["已有AI設計檔", "AI設計檔", "AI 設計檔", "AI 檔", "AI檔"],
 }
+ARTWORK_NEGATED_PATTERNS = (
+    re.compile(
+        r"(?:沒有|無|未附|不提供|無法提供)\s*(?:提供|附上)?\s*"
+        r"(?:參考圖|有PDF|只有\s*PDF(?:\s*檔)?|PDF\s*檔|已有\s*AI\s*(?:設計)?檔|AI\s*(?:設計)?檔)",
+        re.IGNORECASE),
+    re.compile(
+        r"(?:已有\s*)?AI\s*(?:設計)?檔\s*(?:還沒|尚未|未|沒有)\s*整理好",
+        re.IGNORECASE),
+)
 AMBIG_MARKERS = ["大約", "左右", "上下", "約"]
 
 PRODUCT_CTX = re.compile(r"(產品|內容物|商品|本身)")
@@ -251,10 +260,16 @@ def _find_aliases(text: str, aliases: dict[str, list[str]]) -> list[tuple[str, s
     hits = []
     for canon, words in aliases.items():
         for w in words:
-            if (w.lower() in low) if w.isascii() else (w in text):
+            if w.lower() in low:
                 hits.append((canon, w))
                 break
     return hits
+
+
+def _without_negated_artwork_states(text: str) -> str:
+    for pattern in ARTWORK_NEGATED_PATTERNS:
+        text = pattern.sub("", text)
+    return text
 
 
 def _pick_or_conflict(text, hints, field, req, sysf, attr, guard=None):
@@ -362,7 +377,8 @@ def rules_parse(text: str) -> ParseResult:
         ev["finishes"] = "、".join(w for _, w in finish_hits)
 
     _pick_or_conflict(
-        text, ARTWORK_STATUS_ALIASES, "artwork_status", req, sysf, "artwork_status")
+        _without_negated_artwork_states(text), ARTWORK_STATUS_ALIASES,
+        "artwork_status", req, sysf, "artwork_status")
 
     iso, original = extract_date(text)
     req.requested_delivery_date = iso
