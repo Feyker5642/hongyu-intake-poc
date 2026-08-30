@@ -47,8 +47,6 @@ jobs:
             --head "${{ github.event.pull_request.head.sha }}" \
             --test-results "$RUNNER_TEMP/pytest.txt" \
             --output "$RUNNER_TEMP/evidence"
-      - name: Deliberately tamper Safe Build evidence
-        run: echo "tampered.txt" >> "$RUNNER_TEMP/evidence/changed-files.txt"
       - name: Verify trusted Safe Build contract
         id: safe-build
         uses: Feyker5642/safe-build-kit@2e6abe2bdf6ee31f4f2ca6ea84f0e367ca48090b
