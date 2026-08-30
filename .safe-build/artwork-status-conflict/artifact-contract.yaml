@@ -1,0 +1,14 @@
+version: "0.1"
+required:
+  - id: implementation-diff
+    type: git_diff
+    description: Binary-safe full-index diff from base to head.
+    required: true
+  - id: changed-file-list
+    type: changed_files
+    description: Paths changed from base to head.
+    required: true
+  - id: deterministic-test-results
+    type: test_results
+    description: Raw pytest output for the deterministic test run.
+    required: true

@@ -1,0 +1,24 @@
+version: "0.1"
+allowedPaths:
+  - rules/validator.py
+  - tests/test_hardening.py
+forbiddenPaths:
+  - .env
+  - app.py
+  - data/
+  - docs/
+  - schemas/
+  - services/
+allowedCommands:
+  - python -m pytest -q
+forbiddenActions:
+  - Do not read API keys.
+  - Do not call an LLM.
+  - Do not modify the corpus to make tests pass.
+  - Do not silently select either contradictory value.
+  - Do not change the schema, UI, or docs.
+network: forbidden
+credentials: forbidden
+humanApproval:
+  - Confirm the implementation before export.
+isolationEvidenceRequired: false

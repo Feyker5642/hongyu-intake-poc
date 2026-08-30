@@ -1,0 +1,62 @@
+name: Safe Build Verify
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  safe-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # This bootstrap is not itself a consumer receipt; only later PRs from this base are runs.
+      - name: Checkout pull request head and commit objects
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12'
+      - name: Materialize trusted base requirements
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git show "$BASE:requirements.txt" > "$RUNNER_TEMP/trusted-requirements.txt"
+      - name: Install requirements
+        run: python -m pip install -r "$RUNNER_TEMP/trusted-requirements.txt"
+      - name: Run full deterministic tests
+        shell: bash
+        # Personal-profile pilot only: this same runner is not hostile-PR isolation.
+        run: set -o pipefail; python -m pytest -q 2>&1 | tee "$RUNNER_TEMP/pytest.txt"
+      - name: Materialize trusted verification controls
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/trusted-build-pack"
+          for f in quest.yaml policy.yaml acceptance.yaml artifact-contract.yaml; do
+            git show "$BASE:.safe-build/artwork-status-conflict/$f" > "$RUNNER_TEMP/trusted-build-pack/$f"
+          done
+          git show "$BASE:scripts/write_safe_build_evidence.py" > "$RUNNER_TEMP/write_safe_build_evidence.py"
+      - name: Create Evidence Package
+        run: |
+          python "$RUNNER_TEMP/write_safe_build_evidence.py" \
+            --build-pack "$RUNNER_TEMP/trusted-build-pack" \
+            --repository "$GITHUB_WORKSPACE" \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.event.pull_request.head.sha }}" \
+            --test-results "$RUNNER_TEMP/pytest.txt" \
+            --output "$RUNNER_TEMP/evidence"
+      - name: Verify trusted Safe Build contract
+        id: safe-build
+        uses: Feyker5642/safe-build-kit@2e6abe2bdf6ee31f4f2ca6ea84f0e367ca48090b
+        with:
+          build-pack: ${{ runner.temp }}/trusted-build-pack
+          repository: ${{ github.workspace }}
+          base: ${{ github.event.pull_request.base.sha }}
+          head: ${{ github.event.pull_request.head.sha }}
+          evidence: ${{ runner.temp }}/evidence
+      - name: Assert Safe Build passed
+        run: |
+          test "${{ steps.safe-build.outputs.status }}" = PASS
+          test "${{ steps.safe-build.outputs.safe-build-exit-code }}" = 0

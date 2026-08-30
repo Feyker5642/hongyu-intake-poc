@@ -1,0 +1,32 @@
+version: "0.1"
+id: artwork-status-conflict
+title: Resolve contradictory artwork status without first-wins
+goal: Mutually exclusive artwork states must produce null and an explicit conflict rather than silently selecting the first match.
+users:
+  - product pilot maintainer
+profile: personal
+scope:
+  in:
+    - offline deterministic parser
+    - one regression test
+  out:
+    - schema
+    - UI
+    - data corpus
+    - docs
+    - API
+    - LLM path
+    - pricing
+    - ERP
+    - deployment
+inputs:
+  - committed case 060 text
+outputs:
+  - artwork_status null for contradictory states
+  - one explicit artwork conflict
+successCriteria:
+  - Contradictory states produce artwork_status null.
+  - The conflict contains exactly 有PDF and 已有AI設計檔.
+  - status_by_field marks artwork_status as 不確定.
+  - A single valid artwork status remains unchanged.
+  - Full pytest is green.
