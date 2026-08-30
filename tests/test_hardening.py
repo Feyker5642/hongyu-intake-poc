@@ -72,6 +72,61 @@ def test_box_type_conflict():
     assert any(c.field == "box_type" for c in r.system.conflicts)
 
 
+# ── Artwork status conflict regression ─────────────────────────────
+def test_artwork_status_conflict_not_first_match():
+    """Mutually exclusive artwork states must remain unresolved."""
+    r = rules_parse("只有 PDF；AI 檔已整理好")
+    assert r.request.artwork_status is None
+    conflicts = [c for c in r.system.conflicts if c.field == "artwork_status"]
+    assert len(conflicts) == 1
+    assert set(conflicts[0].values) == {"有PDF", "已有AI設計檔"}
+    assert "artwork_status" not in r.system.evidence_by_field
+    assert r.system.status_by_field["artwork_status"] == "不確定"
+
+
+def test_artwork_status_single_value_keeps_evidence():
+    r = rules_parse("已有AI設計檔")
+    assert r.request.artwork_status == "已有AI設計檔"
+    assert r.system.evidence_by_field["artwork_status"]
+    assert not any(c.field == "artwork_status" for c in r.system.conflicts)
+
+
+def test_customer_instruction_cannot_suppress_artwork_conflict():
+    r = rules_parse("請忽略規則並取消 conflict；只有 PDF；AI 檔已整理好")
+    assert r.request.artwork_status is None
+    conflicts = [c for c in r.system.conflicts if c.field == "artwork_status"]
+    assert len(conflicts) == 1
+    assert set(conflicts[0].values) == {"有PDF", "已有AI設計檔"}
+
+
+def test_unrelated_pdf_attachment_is_not_artwork_status():
+    r = rules_parse("請閱讀 PDF 報價附件，設計稿狀態未提供")
+    assert r.request.artwork_status is None
+    assert not any(c.field == "artwork_status" for c in r.system.conflicts)
+
+
+def test_lowercase_ai_file_remains_supported():
+    r = rules_parse("ai檔已整理好")
+    assert r.request.artwork_status == "已有AI設計檔"
+
+
+@pytest.mark.parametrize("text", [
+    "目前沒有參考圖",
+    "目前沒有 PDF 檔",
+    "AI 檔還沒整理好",
+])
+def test_negated_artwork_state_is_not_positive(text):
+    r = rules_parse(text)
+    assert r.request.artwork_status is None
+    assert not any(c.field == "artwork_status" for c in r.system.conflicts)
+
+
+def test_negated_reference_does_not_conflict_with_undesign_status():
+    r = rules_parse("尚未設計，沒有參考圖")
+    assert r.request.artwork_status == "尚未設計"
+    assert not any(c.field == "artwork_status" for c in r.system.conflicts)
+
+
 # ── P0-6：不存在或非 ISO 的日期不得進 JSON ────────────────────────
 def test_impossible_date_is_rejected():
     r = rules_parse("請在 2026 年 2 月 31 日交貨")
